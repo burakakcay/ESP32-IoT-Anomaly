@@ -1,0 +1,21 @@
+# =====================
+# PlatformIO
+# =====================
+firmware/.pio/
+firmware/.vscode/
+
+# =====================
+# Flutter
+# =====================
+mobile_app/.dart_tool/
+mobile_app/build/
+mobile_app/.idea/
+
+# Android
+mobile_app/android/.gradle/
+mobile_app/android/local.properties
+
+# General
+.DS_Store
+Thumbs.db
+learning
