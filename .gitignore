@@ -1,12 +1,8 @@
-# =====================
 # PlatformIO
-# =====================
 firmware/.pio/
 firmware/.vscode/
 
-# =====================
 # Flutter
-# =====================
 mobile_app/.dart_tool/
 mobile_app/build/
 mobile_app/.idea/
@@ -19,3 +15,4 @@ mobile_app/android/local.properties
 .DS_Store
 Thumbs.db
 learning
+docs

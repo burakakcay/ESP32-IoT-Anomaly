@@ -4,9 +4,11 @@
 #include <MPU6050.h>
 #include <WiFi.h>
 #include <time.h>
+#include <WebServer.h>
 
 DHT dht(5, DHT22); // DHT22 sensörünün bağlı olduğu GPIO pini
 MPU6050 mpu;
+WebServer server(80);
 
 // NTP sunucusundan zamanı almak için WiFi bağlantısı ve zaman ayarları
 const char *ssid = "TP-Link_560A";      // WiFi ağınızın SSID'si
@@ -23,6 +25,8 @@ const char deviceId[] = "ESP32_Sensor_Node_001"; // Cihaz kimliği
 // Fonksiyon prototipleri
 bool connectWifi();
 void disconnectWifi();
+String createSensorJson();
+void handleSensor();
 bool syncTimeFromNTP();
 void resyncTimeIfNeeded();
 
@@ -44,50 +48,30 @@ void setup()
     {
         if (syncTimeFromNTP() ? Serial.println("{\"status\":\"wifi_connected_and_time_set\"}") : Serial.println("{\"status\":\"wifi_connected_but_time_not_set\"}"))
             ;
+
+        Serial.print("ESP32 IP Adresi: ");
+        Serial.println(WiFi.localIP());
+
+        server.on("/sensor", HTTP_GET, handleSensor);
+
+        server.begin();
+
+        Serial.println("HTTP sunucusu başlatıldı.");
     }
     else
     {
         Serial.println("{\"status\":\"wifi_connection_failed\"}");
     }
-
-    disconnectWifi(); // WiFi bağlantısını kes, artık internete ihtiyaç yok
 }
 
 void loop()
+
 {
+    server.handleClient();
 
-    float sicaklik = dht.readTemperature(); // Sıcaklık okuma
-    float nem = dht.readHumidity();         // Nem okuma
-    int16_t ax, ay, az;                     // İvme verilerini tutacak değişkenler
-    int16_t gx, gy, gz;                     // Jiroskop verilerini tutacak değişkenler
-    struct tm timeinfo;                     // Zaman bilgisi için yapı
-
-    mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz); // İvme ve jiroskop verilerini oku
-
-    bool sicaklikGecerli = !isnan(sicaklik);
-    bool nemGecerli = !isnan(nem);
-
-    // Zamanın güncellenmesi gerekiyorsa NTP sunucusundan zamanı yeniden al
     resyncTimeIfNeeded();
 
-    // Verileri JSON formatında seri porta yazdır
-    if (getLocalTime(&timeinfo, 0))
-    {
-        time_t now = time(nullptr);
-        struct tm localTime;
-        localtime_r(&now, &localTime);
-        char isoTime[32];
-        strftime(isoTime, sizeof(isoTime), "%Y-%m-%dT%H:%M:%S", &localTime);
-
-        Serial.printf("{\"device_id\":\"%s\",\"zaman\":\"%s\",\"sicaklik\":%s,\"nem\":%s,\"ivme\":{\"x\":%d,\"y\":%d,\"z\":%d},\"jiro\":{\"x\":%d,\"y\":%d,\"z\":%d}}\n",
-                      deviceId,
-                      isoTime,
-                      sicaklikGecerli ? String(sicaklik).c_str() : "null",
-                      nemGecerli ? String(nem).c_str() : "null",
-                      ax, ay, az, gx, gy, gz);
-    }
-    else
-        Serial.println("{\"status\":\"time_not_set\"}");
+    Serial.println(createSensorJson());
 
     delay(2000);
 }
@@ -107,11 +91,73 @@ bool connectWifi()
     Serial.println();
     return WiFi.status() == WL_CONNECTED;
 }
- 
+
 void disconnectWifi()
 {
     WiFi.disconnect(true, true);
     WiFi.mode(WIFI_OFF);
+}
+
+String createSensorJson()
+{
+    float sicaklik = dht.readTemperature();
+    float nem = dht.readHumidity();
+
+    int16_t ax, ay, az;
+    int16_t gx, gy, gz;
+
+    mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+
+    bool sicaklikGecerli = !isnan(sicaklik);
+    bool nemGecerli = !isnan(nem);
+
+    struct tm localTime;
+
+    if (!getLocalTime(&localTime))
+    {
+        return "{\"status\":\"time_not_set\"}";
+    }
+
+    char isoTime[32];
+
+    strftime(
+        isoTime,
+        sizeof(isoTime),
+        "%Y-%m-%dT%H:%M:%S",
+        &localTime);
+
+    String json;
+
+    json += "{";
+    json += "\"device_id\":\"" + String(deviceId) + "\",";
+    json += "\"zaman\":\"" + String(isoTime) + "\",";
+    json += "\"sicaklik\":";
+    json += sicaklikGecerli ? String(sicaklik, 2) : "null";
+    json += ",";
+    json += "\"nem\":";
+    json += nemGecerli ? String(nem, 2) : "null";
+    json += ",";
+    json += "\"ivme\":{";
+    json += "\"x\":" + String(ax) + ",";
+    json += "\"y\":" + String(ay) + ",";
+    json += "\"z\":" + String(az);
+    json += "},";
+    json += "\"jiro\":{";
+    json += "\"x\":" + String(gx) + ",";
+    json += "\"y\":" + String(gy) + ",";
+    json += "\"z\":" + String(gz);
+    json += "}";
+    json += "}";
+
+    return json;
+}
+
+void handleSensor()
+{
+    server.send(
+        200,
+        "application/json",
+        createSensorJson());
 }
 
 bool syncTimeFromNTP()
