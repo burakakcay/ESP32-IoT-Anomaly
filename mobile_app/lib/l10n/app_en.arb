@@ -1,0 +1,16 @@
+{
+	"@@locale": "en",
+	"device": "Device",
+	"lastUpdate": "Last Update",
+	"connected": "Connected",
+	"connecting": "Connecting",
+	"disconnected": "Disconnected",
+	"normal": "Normal",
+	"warning": "Warning",
+	"high": "High",
+	"critical": "Critical",
+	"temperature": "Temperature",
+	"humidity": "Humidity",
+	"acceleration": "Acceleration",
+	"gyroscope": "Gyroscope"
+}

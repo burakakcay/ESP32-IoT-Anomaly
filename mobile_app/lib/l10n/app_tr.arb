@@ -1,0 +1,16 @@
+{
+	"@@locale": "tr",
+	"device": "Cihaz",
+	"lastUpdate": "Son Güncelleme",
+	"connected": "Bağlı",
+	"connecting": "Bağlanıyor",
+	"disconnected": "Bağlantı Kesildi",
+	"normal": "Normal",
+	"warning": "Uyarı",
+	"high": "Yüksek",
+	"critical": "Kritik",
+	"temperature": "Sıcaklık",
+	"humidity": "Nem",
+	"acceleration": "İvme",
+	"gyroscope": "Jiroskop"
+}
