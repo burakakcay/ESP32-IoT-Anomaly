@@ -1,0 +1,99 @@
+import 'package:flutter/material.dart';
+import 'package:sentinel/core/theme/app_colors.dart';
+import 'package:sentinel/l10n/app_localizations.dart';
+import 'package:sentinel/models/anomaly.dart';
+
+class AiAnalysisCard extends StatelessWidget {
+  final AiAnomalyResponse? response;
+
+  const AiAnalysisCard({super.key, required this.response});
+
+  Color _severityColor(String severity) {
+    switch (severity) {
+      case 'critical':
+        return AppColors.critical;
+      case 'high':
+        return AppColors.high;
+      case 'medium':
+        return AppColors.warning;
+      default:
+        return AppColors.normal;
+    }
+  }
+
+  IconData _severityIcon(String severity) {
+    switch (severity) {
+      case 'critical':
+        return Icons.error;
+      case 'high':
+        return Icons.warning_amber_rounded;
+      case 'medium':
+        return Icons.info_outline;
+      default:
+        return Icons.check_circle;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final aiAnalysis = response?.aiAnalysis;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: aiAnalysis == null
+            ? Row(
+                children: [
+                  const Icon(Icons.auto_awesome),
+                  const SizedBox(width: 12),
+                  Text(l10n.aiAnalysisLoading),
+                ],
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        _severityIcon(aiAnalysis.severity),
+                        color: _severityColor(aiAnalysis.severity),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          l10n.aiAnalysis,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(aiAnalysis.summary),
+                  if (aiAnalysis.possibleCause != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      l10n.possibleCause,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(aiAnalysis.possibleCause!),
+                  ],
+                  if (aiAnalysis.affectedSensors.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      l10n.affectedSensors,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(aiAnalysis.affectedSensors.join(', ')),
+                  ],
+                ],
+              ),
+      ),
+    );
+  }
+}

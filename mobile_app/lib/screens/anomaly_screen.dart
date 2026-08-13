@@ -1,11 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:sentinel/models/anomaly.dart';
+import 'package:sentinel/services/api_service.dart';
+import 'package:sentinel/widgets/cards/ai_analysis_card.dart';
 
-class AnomalyScreen extends StatelessWidget {
+class AnomalyScreen extends StatefulWidget {
   final AnomalyResponse anomalyResponse;
 
   const AnomalyScreen({super.key, required this.anomalyResponse});
 
+  @override
+  State<AnomalyScreen> createState() => _AnomalyScreenState();
+}
+
+class _AnomalyScreenState extends State<AnomalyScreen> {
+  AiAnomalyResponse? _aiAnomalyResponse;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAiAnomalies();
+  }
+
+  Future<void> _fetchAiAnomalies() async {
+    try {
+      final data = await ApiService.getAiAnomalies();
+
+      if (!mounted) return;
+
+      setState(() {
+        _aiAnomalyResponse = data;
+      });
+    } catch (e) {
+      debugPrint('AI anomali verileri alınamadı: $e');
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,11 +49,11 @@ class AnomalyScreen extends StatelessWidget {
                 children: [
                   _buildStatistic(
                     title: "Anomali",
-                    value: anomalyResponse.anomalyReadings.toString(),
+                    value: widget.anomalyResponse.anomalyReadings.toString(),
                   ),
                   _buildStatistic(
                     title: "Analiz",
-                    value: anomalyResponse.analyzedReadings.toString(),
+                    value: widget.anomalyResponse.analyzedReadings.toString(),
                   ),
                 ],
               ),
@@ -34,7 +62,11 @@ class AnomalyScreen extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          ...anomalyResponse.results.map(
+          AiAnalysisCard(response: _aiAnomalyResponse),
+
+          const SizedBox(height: 16),
+
+          ...widget.anomalyResponse.results.reversed.map(
             (anomaly) => _buildAnomalyCard(anomaly),
           ),
         ],
@@ -43,6 +75,8 @@ class AnomalyScreen extends StatelessWidget {
   }
 
   Widget _buildAnomalyCard(AnomalyResult anomaly) {
+    final affectedSensors = anomaly.measurements.keys.join(', ');
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -63,28 +97,13 @@ class AnomalyScreen extends StatelessWidget {
                 ),
               ],
             ),
-
-            const SizedBox(height: 8),
-
+            const SizedBox(height: 12),
             Text(
-              "${anomaly.anomalyCount} anomalik sensör",
+              '${anomaly.anomalyCount} sensörde olağan dışı değişim tespit edildi.',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-
-            const SizedBox(height: 12),
-
-            ...anomaly.measurements.entries.map(
-              (entry) => Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(entry.key),
-                    Text("Robust Z: ${entry.value.robustZScore}"),
-                  ],
-                ),
-              ),
-            ),
+            const SizedBox(height: 8),
+            Text('Etkilenen sensörler: $affectedSensors'),
           ],
         ),
       ),

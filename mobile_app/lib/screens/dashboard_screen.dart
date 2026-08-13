@@ -10,7 +10,6 @@ import 'package:sentinel/screens/anomaly_screen.dart';
 import 'package:sentinel/screens/sensor_detail_screen.dart';
 import 'package:sentinel/services/api_service.dart';
 import 'package:sentinel/services/sensor_history_device.dart';
-// import 'package:sentinel/services/sensor_service.dart';
 import 'package:sentinel/widgets/cards/acceleration_card.dart';
 import 'package:sentinel/widgets/cards/anomaly_card.dart';
 import 'package:sentinel/widgets/cards/device_info_card.dart';

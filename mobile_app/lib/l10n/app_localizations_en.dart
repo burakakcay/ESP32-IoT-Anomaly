@@ -86,4 +86,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get latestAnomaly => 'Latest Anomaly';
+
+  @override
+  String get aiAnalysis => 'AI Anomaly Analysis';
+
+  @override
+  String get aiAnalysisLoading => 'AI analysis is loading...';
+
+  @override
+  String get possibleCause => 'Possible Cause';
+
+  @override
+  String get affectedSensors => 'Affected Sensors';
 }

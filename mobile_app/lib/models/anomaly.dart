@@ -75,3 +75,56 @@ class AnomalyResponse {
     );
   }
 }
+
+class AiAnalysis {
+  final String summary;
+  final String severity;
+  final String? possibleCause;
+  final List<String> affectedSensors;
+
+  AiAnalysis({
+    required this.summary,
+    required this.severity,
+    required this.possibleCause,
+    required this.affectedSensors,
+  });
+
+  factory AiAnalysis.fromJson(Map<String, dynamic> json) {
+    return AiAnalysis(
+      summary: json['summary'] as String,
+      severity: json['severity'] as String,
+      possibleCause: json['possibleCause'] as String?,
+      affectedSensors: List<String>.from(json['affectedSensors'] as List),
+    );
+  }
+}
+
+class AiAnomalyResponse {
+  final String deviceId;
+  final int analyzedReadings;
+  final int anomalyReadings;
+  final List<AnomalyResult> anomalies;
+  final AiAnalysis aiAnalysis;
+
+  AiAnomalyResponse({
+    required this.deviceId,
+    required this.analyzedReadings,
+    required this.anomalyReadings,
+    required this.anomalies,
+    required this.aiAnalysis,
+  });
+
+  factory AiAnomalyResponse.fromJson(Map<String, dynamic> json) {
+    return AiAnomalyResponse(
+      deviceId: json['device_id'] as String,
+      analyzedReadings: json['analyzedReadings'] as int,
+      anomalyReadings: json['anomalyReadings'] as int,
+      anomalies: (json['anomalies'] as List)
+          .map((item) => AnomalyResult.fromJson(item as Map<String, dynamic>))
+          .toList(),
+      aiAnalysis: AiAnalysis.fromJson(
+        json['aiAnalysis'] as Map<String, dynamic>,
+      ),
+    );
+  }
+}

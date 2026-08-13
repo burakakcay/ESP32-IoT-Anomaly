@@ -45,5 +45,9 @@
       }
     }
   },
-  "latestAnomaly": "Latest Anomaly"
+  "latestAnomaly": "Latest Anomaly",
+  "aiAnalysis": "AI Anomaly Analysis",
+  "aiAnalysisLoading": "AI analysis is loading...",
+  "possibleCause": "Possible Cause",
+  "affectedSensors": "Affected Sensors"
 }

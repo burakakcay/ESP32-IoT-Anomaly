@@ -86,4 +86,16 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get latestAnomaly => 'Son Anomali';
+
+  @override
+  String get aiAnalysis => 'Yapay Zeka Anomali Yorumu';
+
+  @override
+  String get aiAnalysisLoading => 'Yapay zeka analizi yükleniyor...';
+
+  @override
+  String get possibleCause => 'Olası Neden';
+
+  @override
+  String get affectedSensors => 'Etkilenen Sensörler';
 }

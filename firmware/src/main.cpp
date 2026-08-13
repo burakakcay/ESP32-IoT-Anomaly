@@ -13,15 +13,37 @@
 #include <FirebaseClient.h>
 #include "ExampleFunctions.h"
 
+struct SensorReading
+{
+    // DHT22 ölçümleri
+    float temperature;
+    float humidity;
+
+    // MPU6050 ham ivme ve jiroskop ölçümleri
+    int16_t accelX;
+    int16_t accelY;
+    int16_t accelZ;
+
+    int16_t gyroX;
+    int16_t gyroY;
+    int16_t gyroZ;
+
+    // Aynı ölçüm çevrimine ait zaman bilgisi
+    String timestamp;
+    bool hasValidTime;
+};
+
 // Fonksiyon prototipleri
 bool connectWifi();
-void disconnectWifi();
-void createSensorDocument();
 void processFirestoreResult(AsyncResult &aResult);
-String createSensorJson();
+SensorReading readSensorData();
+void createSensorDocument(const SensorReading &reading);
+String createSensorJson(const SensorReading &reading);
 void handleSensor();
 bool syncTimeFromNTP();
 void resyncTimeIfNeeded();
+void startNetworkServices();
+void reconnectWifiIfNeeded();
 
 DHT dht(5, DHT22); // DHT22 sensörünün bağlı olduğu GPIO pini
 MPU6050 mpu;
@@ -29,7 +51,6 @@ WebServer server(80);
 
 FirebaseApp app;
 Firestore::Documents Docs;
-AsyncResult firestoreResult;
 
 const uint32_t WIFI_TIMEOUT_MS = 15000;                          // WiFi bağlantısı için zaman aşımı süresi (15 saniye)
 const uint32_t NTP_TIMEOUT_MS = 10000;                           // NTP sunucusundan zaman almak için zaman aşımı süresi (10 saniye)
@@ -48,21 +69,34 @@ UserAuth user_auth(
     FIREBASE_USER_PASSWORD,
     3000);
 
+// Kimlik doğrulama mesajını yalnızca bir kez yazdırmak için kullanılır.
 bool firebaseReady = false;
-bool firestoreTestDone = false;
 
+// HTTP sunucusu ve Firebase istemcisi başarıyla başlatıldıktan sonra true olur.
+bool networkServicesStarted = false;
+
+// Periyodik Firestore gönderimi ve Wi-Fi yeniden bağlanma zamanlayıcıları.
 unsigned long lastFirestoreSend = 0;
-const unsigned long FIRESTORE_INTERVAL = 5000;
+unsigned long lastWifiReconnectAttempt = 0;
+
+// Firestore kotasını korumak için sensör verisi 15 saniyede bir gönderilir.
+const unsigned long FIRESTORE_INTERVAL = 15000;
+const unsigned long WIFI_RETRY_INTERVAL = 30000;
+
+// ============================================================
+// ESP32 yaşam döngüsü
+// ============================================================
 
 void setup()
 {
     Serial.begin(115200);
 
-    // Sensörler başlatılıyor
+    // Sensörler başlatılıyor.
     Wire.begin(21, 22); // I2C pinlerini tanımla (SDA: GPIO21, SCL: GPIO22);
     mpu.initialize();   // MPU6050 sensörünü başlat
     dht.begin();        // DHT sensörünü başlat
 
+    // MPU6050 bağlantısını başlangıçta doğrula.
     if (mpu.testConnection() ? Serial.println("{\"status\":\"boot_ok\"}") : Serial.println("{\"status\":\"mpu_couldn't_initialize\"}"))
         ;
 
@@ -70,31 +104,7 @@ void setup()
 
     if (connectWifi())
     {
-
-        set_ssl_client_insecure_and_buffer(ssl_client);
-
-        Serial.println("Firebase başlatılıyor...");
-
-        initializeApp(
-            aClient,
-            app,
-            getAuth(user_auth),
-            auth_debug_print,
-            "firebaseAuthTask");
-
-        app.getApp<Firestore::Documents>(Docs);
-
-        if (syncTimeFromNTP() ? Serial.println("{\"status\":\"wifi_connected_and_time_set\"}") : Serial.println("{\"status\":\"wifi_connected_but_time_not_set\"}"))
-            ;
-
-        Serial.print("ESP32 IP Adresi: ");
-        Serial.println(WiFi.localIP());
-
-        server.on("/sensor", HTTP_GET, handleSensor);
-
-        server.begin();
-
-        Serial.println("HTTP sunucusu başlatıldı.");
+        startNetworkServices();
     }
     else
     {
@@ -104,10 +114,16 @@ void setup()
 
 void loop()
 {
-    server.handleClient();
+    // Wi-Fi koparsa kontrollü aralıklarla yeniden bağlanmayı dene.
+    reconnectWifiIfNeeded();
 
-    app.loop();
+    if (networkServicesStarted)
+    {
+        server.handleClient();
+        app.loop();
+    }
 
+    // Firebase kimlik doğrulamasının tamamlandığını bir kez bildir.
     if (app.ready() && !firebaseReady)
     {
         firebaseReady = true;
@@ -121,15 +137,32 @@ void loop()
 
     resyncTimeIfNeeded();
 
-    if (app.ready() && millis() - lastFirestoreSend >= FIRESTORE_INTERVAL)
+    // Ağ, Firebase ve zaman hazırsa tek bir ölçüm snapshot'ını Firestore'a yaz.
+    if (
+        networkServicesStarted &&
+        WiFi.status() == WL_CONNECTED &&
+        app.ready() &&
+        millis() - lastFirestoreSend >= FIRESTORE_INTERVAL)
     {
         lastFirestoreSend = millis();
 
-        Serial.println(createSensorJson());
+        SensorReading reading = readSensorData();
 
-        createSensorDocument();
+        if (!reading.hasValidTime)
+        {
+            Serial.println("{\"status\":\"time_not_set\"}");
+            return;
+        }
+
+        Serial.println(createSensorJson(reading));
+
+        createSensorDocument(reading);
     }
 }
+
+// ============================================================
+// Wi-Fi ve ağ servisleri
+// ============================================================
 
 bool connectWifi()
 {
@@ -147,30 +180,33 @@ bool connectWifi()
     return WiFi.status() == WL_CONNECTED;
 }
 
-void disconnectWifi()
+// ============================================================
+// Sensör okuma ve HTTP JSON yanıtı
+// ============================================================
+
+SensorReading readSensorData()
 {
-    WiFi.disconnect(true, true);
-    WiFi.mode(WIFI_OFF);
-}
+    SensorReading reading;
 
-String createSensorJson()
-{
-    float sicaklik = dht.readTemperature();
-    float nem = dht.readHumidity();
+    // Her sensörü yalnızca bir kez oku; aynı snapshot hem JSON hem Firestore'da kullanılır.
+    reading.temperature = dht.readTemperature();
+    reading.humidity = dht.readHumidity();
 
-    int16_t ax, ay, az;
-    int16_t gx, gy, gz;
-
-    mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-
-    bool sicaklikGecerli = !isnan(sicaklik);
-    bool nemGecerli = !isnan(nem);
+    mpu.getMotion6(
+        &reading.accelX,
+        &reading.accelY,
+        &reading.accelZ,
+        &reading.gyroX,
+        &reading.gyroY,
+        &reading.gyroZ);
 
     struct tm localTime;
 
+    // Zaman yoksa Firestore'a sıralanabilir/geçerli bir kayıt yazma.
     if (!getLocalTime(&localTime))
     {
-        return "{\"status\":\"time_not_set\"}";
+        reading.hasValidTime = false;
+        return reading;
     }
 
     char isoTime[32];
@@ -181,26 +217,111 @@ String createSensorJson()
         "%Y-%m-%dT%H:%M:%S",
         &localTime);
 
+    reading.timestamp = String(isoTime);
+    reading.hasValidTime = true;
+
+    return reading;
+}
+
+void startNetworkServices()
+{
+    // Aynı servisleri ikinci kez başlatmayı önle.
+    if (networkServicesStarted)
+    {
+        return;
+    }
+
+    set_ssl_client_insecure_and_buffer(ssl_client);
+
+    Serial.println("Firebase başlatılıyor...");
+
+    initializeApp(
+        aClient,
+        app,
+        getAuth(user_auth),
+        auth_debug_print,
+        "firebaseAuthTask");
+
+    app.getApp<Firestore::Documents>(Docs);
+
+    if (syncTimeFromNTP())
+    {
+        Serial.println("{\"status\":\"wifi_connected_and_time_set\"}");
+    }
+    else
+    {
+        Serial.println("{\"status\":\"wifi_connected_but_time_not_set\"}");
+    }
+
+    // Yerel ağdaki hızlı tanılama/ölçüm görüntüleme endpoint'i.
+    server.on("/sensor", HTTP_GET, handleSensor);
+    server.begin();
+
+    networkServicesStarted = true;
+
+    Serial.print("ESP32 IP Adresi: ");
+    Serial.println(WiFi.localIP());
+
+    Serial.println("HTTP sunucusu başlatıldı.");
+}
+
+void reconnectWifiIfNeeded()
+{
+    if (WiFi.status() == WL_CONNECTED)
+    {
+        return;
+    }
+
+    // Başarısız bağlantılarda sürekli deneme yaparak işlemciyi/ağı yorma.
+    if (millis() - lastWifiReconnectAttempt < WIFI_RETRY_INTERVAL)
+    {
+        return;
+    }
+
+    lastWifiReconnectAttempt = millis();
+
+    Serial.println("{\"status\":\"wifi_reconnecting\"}");
+
+    if (connectWifi())
+    {
+        Serial.println("{\"status\":\"wifi_reconnected\"}");
+
+        if (!networkServicesStarted)
+        {
+            startNetworkServices();
+        }
+    }
+    else
+    {
+        Serial.println("{\"status\":\"wifi_reconnect_failed\"}");
+    }
+}
+
+String createSensorJson(const SensorReading &reading)
+{
+    const bool temperatureIsValid = !isnan(reading.temperature);
+    const bool humidityIsValid = !isnan(reading.humidity);
+
     String json;
 
     json += "{";
     json += "\"device_id\":\"" + String(deviceId) + "\",";
-    json += "\"zaman\":\"" + String(isoTime) + "\",";
+    json += "\"zaman\":\"" + reading.timestamp + "\",";
     json += "\"sicaklik\":";
-    json += sicaklikGecerli ? String(sicaklik, 2) : "null";
+    json += temperatureIsValid ? String(reading.temperature, 2) : "null";
     json += ",";
     json += "\"nem\":";
-    json += nemGecerli ? String(nem, 2) : "null";
+    json += humidityIsValid ? String(reading.humidity, 2) : "null";
     json += ",";
     json += "\"ivme\":{";
-    json += "\"x\":" + String(ax) + ",";
-    json += "\"y\":" + String(ay) + ",";
-    json += "\"z\":" + String(az);
+    json += "\"x\":" + String(reading.accelX) + ",";
+    json += "\"y\":" + String(reading.accelY) + ",";
+    json += "\"z\":" + String(reading.accelZ);
     json += "},";
     json += "\"jiro\":{";
-    json += "\"x\":" + String(gx) + ",";
-    json += "\"y\":" + String(gy) + ",";
-    json += "\"z\":" + String(gz);
+    json += "\"x\":" + String(reading.gyroX) + ",";
+    json += "\"y\":" + String(reading.gyroY) + ",";
+    json += "\"z\":" + String(reading.gyroZ);
     json += "}";
     json += "}";
 
@@ -209,14 +330,31 @@ String createSensorJson()
 
 void handleSensor()
 {
+    // HTTP isteği için yeni ve tutarlı bir ölçüm snapshot'ı oluştur.
+    SensorReading reading = readSensorData();
+
+    if (!reading.hasValidTime)
+    {
+        server.send(
+            503,
+            "application/json",
+            "{\"status\":\"time_not_set\"}");
+        return;
+    }
+
     server.send(
         200,
         "application/json",
-        createSensorJson());
+        createSensorJson(reading));
 }
+
+// ============================================================
+// Zaman senkronizasyonu
+// ============================================================
 
 bool syncTimeFromNTP()
 {
+    // Firestore'da sıralanabilir yerel zaman damgası üretmek için NTP kullanılır.
     configTime(0, 0, NTP_SERVER);
     setenv("TZ", TZ_INFO, 1);
     tzset();
@@ -236,71 +374,65 @@ bool syncTimeFromNTP()
 
 void resyncTimeIfNeeded()
 {
-    static uint32_t lastSyncTime = 0;
+    static uint32_t lastSyncAttempt = 0;
 
-    // Zamanın yeniden senkronize edilmesi gereken süre geçtiyse NTP sunucusundan zamanı yeniden al
-    if (millis() - lastSyncTime > RESYNC_INTERVAL_MS)
+    if (millis() - lastSyncAttempt < RESYNC_INTERVAL_MS)
     {
-        
-        if (syncTimeFromNTP())
-        {
-            Serial.println("{\"status\":\"time_resynced\"}");
-            lastSyncTime = millis();
-        }
-        else
-        {
-            Serial.println("{\"status\":\"time_resync_failed\"}");
-        }
+        return;
+    }
+
+    lastSyncAttempt = millis();
+
+    if (WiFi.status() != WL_CONNECTED)
+    {
+        Serial.println("{\"status\":\"time_resync_skipped_wifi_disconnected\"}");
+        return;
+    }
+
+    if (syncTimeFromNTP())
+    {
+        Serial.println("{\"status\":\"time_resynced\"}");
+    }
+    else
+    {
+        Serial.println("{\"status\":\"time_resync_failed\"}");
     }
 }
 
-void createSensorDocument()
+// ============================================================
+// Firestore
+// ============================================================
+
+void createSensorDocument(const SensorReading &reading)
 {
-    float sicaklik = dht.readTemperature();
-    float nem = dht.readHumidity();
-
-    int16_t ax, ay, az;
-    int16_t gx, gy, gz;
-
-    mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-
-    struct tm localTime;
-
-    if (!getLocalTime(&localTime))
+    if (!reading.hasValidTime)
     {
         Serial.println("Firestore: Zaman bilgisi alınamadı.");
         return;
     }
 
-    char isoTime[32];
-
-    strftime(
-        isoTime,
-        sizeof(isoTime),
-        "%Y-%m-%dT%H:%M:%S",
-        &localTime);
-
+    // readings alt koleksiyonunda otomatik belge kimliği oluşturulur.
     String documentPath =
         "devices/" +
         String(deviceId) +
         "/readings";
 
     Values::StringValue deviceIdV(deviceId);
-    Values::StringValue timestampV(isoTime);
+    Values::StringValue timestampV(reading.timestamp);
 
     Values::DoubleValue temperatureV(
-        number_t(sicaklik, 2));
+        number_t(reading.temperature, 2));
 
     Values::DoubleValue humidityV(
-        number_t(nem, 2));
+        number_t(reading.humidity, 2));
 
-    Values::IntegerValue accelXV(ax);
-    Values::IntegerValue accelYV(ay);
-    Values::IntegerValue accelZV(az);
+    Values::IntegerValue accelXV(reading.accelX);
+    Values::IntegerValue accelYV(reading.accelY);
+    Values::IntegerValue accelZV(reading.accelZ);
 
-    Values::IntegerValue gyroXV(gx);
-    Values::IntegerValue gyroYV(gy);
-    Values::IntegerValue gyroZV(gz);
+    Values::IntegerValue gyroXV(reading.gyroX);
+    Values::IntegerValue gyroYV(reading.gyroY);
+    Values::IntegerValue gyroZV(reading.gyroZ);
 
     Document<Values::Value> doc(
         "device_id",
@@ -310,7 +442,7 @@ void createSensorDocument()
         "timestamp",
         Values::Value(timestampV));
 
-    if (!isnan(sicaklik))
+    if (!isnan(reading.temperature))
     {
         doc.add(
             "temperature",
@@ -323,7 +455,7 @@ void createSensorDocument()
             Values::Value(Values::NullValue()));
     }
 
-    if (!isnan(nem))
+    if (!isnan(reading.humidity))
     {
         doc.add(
             "humidity",
@@ -374,6 +506,7 @@ void createSensorDocument()
 
 void processFirestoreResult(AsyncResult &aResult)
 {
+    // FirebaseClient asenkron sonucu yoksa işlenecek bir durum da yoktur.
     if (!aResult.isResult())
         return;
 

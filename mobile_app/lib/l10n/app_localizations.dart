@@ -247,6 +247,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Latest Anomaly'**
   String get latestAnomaly;
+
+  /// No description provided for @aiAnalysis.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Anomaly Analysis'**
+  String get aiAnalysis;
+
+  /// No description provided for @aiAnalysisLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'AI analysis is loading...'**
+  String get aiAnalysisLoading;
+
+  /// No description provided for @possibleCause.
+  ///
+  /// In en, this message translates to:
+  /// **'Possible Cause'**
+  String get possibleCause;
+
+  /// No description provided for @affectedSensors.
+  ///
+  /// In en, this message translates to:
+  /// **'Affected Sensors'**
+  String get affectedSensors;
 }
 
 class _AppLocalizationsDelegate

@@ -38,4 +38,18 @@ class ApiService {
       throw Exception('Anomali verileri alınamadı: ${response.statusCode}');
     }
   }
+
+  static Future<AiAnomalyResponse> getAiAnomalies() async {
+    final response = await http.get(
+      Uri.parse('${ApiConstants.nodeBaseUrl}/api/anomalies/ai'),
+    );
+
+    if (response.statusCode == 200) {
+      final jsonData = jsonDecode(response.body) as Map<String, dynamic>;
+
+      return AiAnomalyResponse.fromJson(jsonData);
+    }
+
+    throw Exception('Ai anomali verileri alınamadı: ${response.statusCode}');
+  }
 }

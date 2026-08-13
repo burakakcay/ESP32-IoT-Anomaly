@@ -45,5 +45,9 @@
       }
     }
   },
-  "latestAnomaly": "Son Anomali"
+  "latestAnomaly": "Son Anomali",
+  "aiAnalysis": "Yapay Zeka Anomali Yorumu",
+  "aiAnalysisLoading": "Yapay zeka analizi yükleniyor...",
+  "possibleCause": "Olası Neden",
+  "affectedSensors": "Etkilenen Sensörler"
 }
