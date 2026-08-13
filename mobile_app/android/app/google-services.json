@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "991272507643",
+    "project_id": "esp32-iot-anomali",
+    "storage_bucket": "esp32-iot-anomali.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:991272507643:android:34ccf321dde8f02e2bb85e",
+        "android_client_info": {
+          "package_name": "com.example.sentinel"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD781lgaXB95OzX7sN7ACfwiv3ZJF1b6Ls"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

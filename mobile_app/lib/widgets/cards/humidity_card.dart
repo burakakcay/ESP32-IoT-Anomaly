@@ -14,7 +14,7 @@ class HumidityCard extends StatelessWidget {
       value: humidity.toStringAsFixed(1),
       unit: "%",
       icon: Icons.water_drop,
-      status: SensorStatusHelper.humidityStatus(humidity),
+      status: SensorStatusHelper.getHumidityStatus(humidity),
     );
   }
 }

@@ -8,6 +8,7 @@ class SensorCard extends StatelessWidget {
   final String? unit;
   final IconData icon;
   final SensorStatus status;
+  final VoidCallback? onTap;
 
   const SensorCard({
     super.key,
@@ -16,65 +17,72 @@ class SensorCard extends StatelessWidget {
     this.unit,
     required this.icon,
     required this.status,
+    this.onTap
   });
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(icon),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                Row(
+                  children: [
+                    Icon(icon),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const Spacer(),
+
+                Center(
+                  child: RichText(
+                    text: TextSpan(
+                      style: DefaultTextStyle.of(context).style,
+                      children: [
+                        TextSpan(
+                          text: value,
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if (unit != null)
+                          TextSpan(
+                            text: " $unit",
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ),
+
+                const Spacer(),
+                Align(
+                  alignment: Alignment.center,
+                  child: StatusDot(status: status),
+                ),
               ],
             ),
-
-            const Spacer(),
-
-            Center(
-              child: RichText(
-                text: TextSpan(
-                  style: DefaultTextStyle.of(context).style,
-                  children: [
-                    TextSpan(
-                      text: value,
-                      style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if (unit != null)
-                      TextSpan(
-                        text: " $unit",
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-
-            const Spacer(),
-            Align(
-              alignment: Alignment.center,
-              child: StatusDot(status: status),
-            ),
-          ],
+          ),
         ),
       ),
     );

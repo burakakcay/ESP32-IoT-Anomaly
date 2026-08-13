@@ -1,4 +1,6 @@
+import 'package:sentinel/models/anomaly.dart';
 import 'package:sentinel/repositories/api_repository.dart';
+import 'package:sentinel/services/api_service.dart';
 
 class FirebaseService implements ApiRepository {
   @override
@@ -18,5 +20,10 @@ class FirebaseService implements ApiRepository {
   Future<String> updateData(String data, String key) async {
     await Future.delayed(const Duration(seconds: 2));
     return "$key isimli veri $data değerine güncellendi.";
+  }
+
+  @override
+  Future<AnomalyResponse> getAnomalies() {
+    return ApiService.getAnomalies();
   }
 }

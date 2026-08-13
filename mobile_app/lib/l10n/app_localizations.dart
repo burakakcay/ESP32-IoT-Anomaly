@@ -98,17 +98,17 @@ abstract class AppLocalizations {
     Locale('tr'),
   ];
 
+  /// No description provided for @appName.
+  ///
+  /// In en, this message translates to:
+  /// **'Sentinel'**
+  String get appName;
+
   /// No description provided for @device.
   ///
   /// In en, this message translates to:
   /// **'Device'**
   String get device;
-
-  /// No description provided for @lastUpdate.
-  ///
-  /// In en, this message translates to:
-  /// **'Last Update'**
-  String get lastUpdate;
 
   /// No description provided for @connected.
   ///
@@ -127,6 +127,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Disconnected'**
   String get disconnected;
+
+  /// No description provided for @lastUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Update'**
+  String get lastUpdate;
+
+  /// No description provided for @packets.
+  ///
+  /// In en, this message translates to:
+  /// **'Packets'**
+  String get packets;
+
+  /// No description provided for @temperature.
+  ///
+  /// In en, this message translates to:
+  /// **'Temperature'**
+  String get temperature;
+
+  /// No description provided for @humidity.
+  ///
+  /// In en, this message translates to:
+  /// **'Humidity'**
+  String get humidity;
+
+  /// No description provided for @acceleration.
+  ///
+  /// In en, this message translates to:
+  /// **'Acceleration'**
+  String get acceleration;
+
+  /// No description provided for @gyroscope.
+  ///
+  /// In en, this message translates to:
+  /// **'Gyroscope'**
+  String get gyroscope;
 
   /// No description provided for @normal.
   ///
@@ -152,29 +188,65 @@ abstract class AppLocalizations {
   /// **'Critical'**
   String get critical;
 
-  /// No description provided for @temperature.
+  /// No description provided for @minimum.
   ///
   /// In en, this message translates to:
-  /// **'Temperature'**
-  String get temperature;
+  /// **'Min'**
+  String get minimum;
 
-  /// No description provided for @humidity.
+  /// No description provided for @average.
   ///
   /// In en, this message translates to:
-  /// **'Humidity'**
-  String get humidity;
+  /// **'Average'**
+  String get average;
 
-  /// No description provided for @acceleration.
+  /// No description provided for @maximum.
   ///
   /// In en, this message translates to:
-  /// **'Acceleration'**
-  String get acceleration;
+  /// **'Max'**
+  String get maximum;
 
-  /// No description provided for @gyroscope.
+  /// No description provided for @noData.
   ///
   /// In en, this message translates to:
-  /// **'Gyroscope'**
-  String get gyroscope;
+  /// **'No data available'**
+  String get noData;
+
+  /// No description provided for @anomalyStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Anomaly Status'**
+  String get anomalyStatus;
+
+  /// No description provided for @anomalyDataLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Anomaly data is loading...'**
+  String get anomalyDataLoading;
+
+  /// No description provided for @systemNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'System normal. No anomalies detected.'**
+  String get systemNormal;
+
+  /// No description provided for @anomaliesDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} anomalies detected.'**
+  String anomaliesDetected(int count);
+
+  /// No description provided for @measurementsAnalyzed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} measurements analyzed.'**
+  String measurementsAnalyzed(int count);
+
+  /// No description provided for @latestAnomaly.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest Anomaly'**
+  String get latestAnomaly;
 }
 
 class _AppLocalizationsDelegate

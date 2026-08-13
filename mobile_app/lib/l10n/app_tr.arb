@@ -1,16 +1,49 @@
 {
-	"@@locale": "tr",
-	"device": "Cihaz",
-	"lastUpdate": "Son Güncelleme",
-	"connected": "Bağlı",
-	"connecting": "Bağlanıyor",
-	"disconnected": "Bağlantı Kesildi",
-	"normal": "Normal",
-	"warning": "Uyarı",
-	"high": "Yüksek",
-	"critical": "Kritik",
-	"temperature": "Sıcaklık",
-	"humidity": "Nem",
-	"acceleration": "İvme",
-	"gyroscope": "Jiroskop"
+  "@@locale": "tr",
+
+  "appName": "Sentinel",
+
+  "device": "Cihaz",
+  "connected": "Bağlı",
+  "connecting": "Bağlanıyor",
+  "disconnected": "Bağlantı Kesildi",
+  "lastUpdate": "Son Güncelleme",
+  "packets": "Alınan Paket",
+
+  "temperature": "Sıcaklık",
+  "humidity": "Nem",
+  "acceleration": "İvme",
+  "gyroscope": "Jiroskop",
+
+  "normal": "Normal",
+  "warning": "Uyarı",
+  "high": "Yüksek",
+  "critical": "Kritik",
+
+  "minimum": "Min",
+  "average": "Ortalama",
+  "maximum": "Maks",
+  "noData": "Veri bulunamadı",
+
+  "anomalyStatus": "Anomali Durumu",
+  "anomalyDataLoading": "Anomali verileri yükleniyor...",
+  "systemNormal": "Sistem normal. Anomali tespit edilemedi.",
+  "anomaliesDetected": "{count} anomalies detected.",
+  "@anomaliesDetected": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+
+  "measurementsAnalyzed": "{count} measurements analyzed.",
+  "@measurementsAnalyzed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "latestAnomaly": "Son Anomali"
 }

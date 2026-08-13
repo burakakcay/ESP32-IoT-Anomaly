@@ -62,4 +62,23 @@ class SensorData {
       "jiro": gyroscope.toJson(),
     };
   }
+
+factory SensorData.fromFirestoreJson(Map<String, dynamic> json) {
+    return SensorData(
+      deviceId: json["device_id"] as String,
+      timestamp: DateTime.parse(json["timestamp"] as String),
+      temperature: (json["temperature"] as num).toDouble(),
+      humidity: (json["humidity"] as num).toDouble(),
+      acceleration: Acceleration(
+        x: (json["accel_x"] as num).toInt(),
+        y: (json["accel_y"] as num).toInt(),
+        z: (json["accel_z"] as num).toInt(),
+      ),
+      gyroscope: Gyroscope(
+        x: (json["gyro_x"] as num).toInt(),
+        y: (json["gyro_y"] as num).toInt(),
+        z: (json["gyro_z"] as num).toInt(),
+      ),
+    );
+  }
 }

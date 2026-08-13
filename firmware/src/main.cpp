@@ -5,16 +5,31 @@
 #include <WiFi.h>
 #include <time.h>
 #include <WebServer.h>
+#include "secrets.h"
+
+#define ENABLE_USER_AUTH
+#define ENABLE_FIRESTORE
+
+#include <FirebaseClient.h>
+#include "ExampleFunctions.h"
+
+// Fonksiyon prototipleri
+bool connectWifi();
+void disconnectWifi();
+void createSensorDocument();
+void processFirestoreResult(AsyncResult &aResult);
+String createSensorJson();
+void handleSensor();
+bool syncTimeFromNTP();
+void resyncTimeIfNeeded();
 
 DHT dht(5, DHT22); // DHT22 sensörünün bağlı olduğu GPIO pini
 MPU6050 mpu;
 WebServer server(80);
 
-// NTP sunucusundan zamanı almak için WiFi bağlantısı ve zaman ayarları
-const char *ssid = "TP-Link_560A";      // WiFi ağınızın SSID'si
-const char *password = "Ba21170341.";   // WiFi ağınızın şifresi
-const char *ntpServer = "pool.ntp.org"; // NTP sunucusu
-const char *tzInfo = "TRT-3";           // Türkiye saat dilimi bilgisi
+FirebaseApp app;
+Firestore::Documents Docs;
+AsyncResult firestoreResult;
 
 const uint32_t WIFI_TIMEOUT_MS = 15000;                          // WiFi bağlantısı için zaman aşımı süresi (15 saniye)
 const uint32_t NTP_TIMEOUT_MS = 10000;                           // NTP sunucusundan zaman almak için zaman aşımı süresi (10 saniye)
@@ -22,13 +37,22 @@ const uint32_t RESYNC_INTERVAL_MS = 24UL * 60UL * 60UL * 1000UL; // NTP zamanın
 
 const char deviceId[] = "ESP32_Sensor_Node_001"; // Cihaz kimliği
 
-// Fonksiyon prototipleri
-bool connectWifi();
-void disconnectWifi();
-String createSensorJson();
-void handleSensor();
-bool syncTimeFromNTP();
-void resyncTimeIfNeeded();
+SSL_CLIENT ssl_client;
+
+using AsyncClient = AsyncClientClass;
+AsyncClient aClient(ssl_client);
+
+UserAuth user_auth(
+    FIREBASE_API_KEY,
+    FIREBASE_USER_EMAIL,
+    FIREBASE_USER_PASSWORD,
+    3000);
+
+bool firebaseReady = false;
+bool firestoreTestDone = false;
+
+unsigned long lastFirestoreSend = 0;
+const unsigned long FIRESTORE_INTERVAL = 5000;
 
 void setup()
 {
@@ -46,6 +70,20 @@ void setup()
 
     if (connectWifi())
     {
+
+        set_ssl_client_insecure_and_buffer(ssl_client);
+
+        Serial.println("Firebase başlatılıyor...");
+
+        initializeApp(
+            aClient,
+            app,
+            getAuth(user_auth),
+            auth_debug_print,
+            "firebaseAuthTask");
+
+        app.getApp<Firestore::Documents>(Docs);
+
         if (syncTimeFromNTP() ? Serial.println("{\"status\":\"wifi_connected_and_time_set\"}") : Serial.println("{\"status\":\"wifi_connected_but_time_not_set\"}"))
             ;
 
@@ -65,21 +103,38 @@ void setup()
 }
 
 void loop()
-
 {
     server.handleClient();
 
+    app.loop();
+
+    if (app.ready() && !firebaseReady)
+    {
+        firebaseReady = true;
+
+        Serial.println("================================");
+        Serial.println("Firebase authentication başarılı!");
+        Serial.print("UID: ");
+        Serial.println(app.getUid());
+        Serial.println("================================");
+    }
+
     resyncTimeIfNeeded();
 
-    Serial.println(createSensorJson());
+    if (app.ready() && millis() - lastFirestoreSend >= FIRESTORE_INTERVAL)
+    {
+        lastFirestoreSend = millis();
 
-    delay(2000);
+        Serial.println(createSensorJson());
+
+        createSensorDocument();
+    }
 }
 
 bool connectWifi()
 {
     WiFi.mode(WIFI_STA); //
-    WiFi.begin(ssid, password);
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     uint32_t startAttemptTime = millis();
 
     while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < WIFI_TIMEOUT_MS)
@@ -162,8 +217,8 @@ void handleSensor()
 
 bool syncTimeFromNTP()
 {
-    configTime(0, 0, ntpServer);
-    setenv("TZ", tzInfo, 1);
+    configTime(0, 0, NTP_SERVER);
+    setenv("TZ", TZ_INFO, 1);
     tzset();
     uint32_t startAttemptTime = millis();
     struct tm timeinfo;
@@ -196,5 +251,162 @@ void resyncTimeIfNeeded()
         {
             Serial.println("{\"status\":\"time_resync_failed\"}");
         }
+    }
+}
+
+void createSensorDocument()
+{
+    float sicaklik = dht.readTemperature();
+    float nem = dht.readHumidity();
+
+    int16_t ax, ay, az;
+    int16_t gx, gy, gz;
+
+    mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+
+    struct tm localTime;
+
+    if (!getLocalTime(&localTime))
+    {
+        Serial.println("Firestore: Zaman bilgisi alınamadı.");
+        return;
+    }
+
+    char isoTime[32];
+
+    strftime(
+        isoTime,
+        sizeof(isoTime),
+        "%Y-%m-%dT%H:%M:%S",
+        &localTime);
+
+    String documentPath =
+        "devices/" +
+        String(deviceId) +
+        "/readings";
+
+    Values::StringValue deviceIdV(deviceId);
+    Values::StringValue timestampV(isoTime);
+
+    Values::DoubleValue temperatureV(
+        number_t(sicaklik, 2));
+
+    Values::DoubleValue humidityV(
+        number_t(nem, 2));
+
+    Values::IntegerValue accelXV(ax);
+    Values::IntegerValue accelYV(ay);
+    Values::IntegerValue accelZV(az);
+
+    Values::IntegerValue gyroXV(gx);
+    Values::IntegerValue gyroYV(gy);
+    Values::IntegerValue gyroZV(gz);
+
+    Document<Values::Value> doc(
+        "device_id",
+        Values::Value(deviceIdV));
+
+    doc.add(
+        "timestamp",
+        Values::Value(timestampV));
+
+    if (!isnan(sicaklik))
+    {
+        doc.add(
+            "temperature",
+            Values::Value(temperatureV));
+    }
+    else
+    {
+        doc.add(
+            "temperature",
+            Values::Value(Values::NullValue()));
+    }
+
+    if (!isnan(nem))
+    {
+        doc.add(
+            "humidity",
+            Values::Value(humidityV));
+    }
+    else
+    {
+        doc.add(
+            "humidity",
+            Values::Value(Values::NullValue()));
+    }
+
+    doc.add(
+        "accel_x",
+        Values::Value(accelXV));
+
+    doc.add(
+        "accel_y",
+        Values::Value(accelYV));
+
+    doc.add(
+        "accel_z",
+        Values::Value(accelZV));
+
+    doc.add(
+        "gyro_x",
+        Values::Value(gyroXV));
+
+    doc.add(
+        "gyro_y",
+        Values::Value(gyroYV));
+
+    doc.add(
+        "gyro_z",
+        Values::Value(gyroZV));
+
+    Serial.println("Firestore: Sensor verisi gönderiliyor...");
+
+    Docs.createDocument(
+        aClient,
+        Firestore::Parent(FIREBASE_PROJECT_ID),
+        documentPath,
+        DocumentMask(),
+        doc,
+        processFirestoreResult,
+        "sensorDataTask");
+}
+
+void processFirestoreResult(AsyncResult &aResult)
+{
+    if (!aResult.isResult())
+        return;
+
+    if (aResult.isEvent())
+    {
+        Firebase.printf(
+            "Event task: %s, msg: %s, code: %d\n",
+            aResult.uid().c_str(),
+            aResult.eventLog().message().c_str(),
+            aResult.eventLog().code());
+    }
+
+    if (aResult.isDebug())
+    {
+        Firebase.printf(
+            "Debug task: %s, msg: %s\n",
+            aResult.uid().c_str(),
+            aResult.debug().c_str());
+    }
+
+    if (aResult.isError())
+    {
+        Firebase.printf(
+            "Error task: %s, msg: %s, code: %d\n",
+            aResult.uid().c_str(),
+            aResult.error().message().c_str(),
+            aResult.error().code());
+    }
+
+    if (aResult.available())
+    {
+        Firebase.printf(
+            "Firestore payload: %s\n",
+            aResult.c_str());
     }
 }

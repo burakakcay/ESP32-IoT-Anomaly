@@ -23,7 +23,7 @@ class TemperatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status = SensorStatusHelper.temperatureStatus(temperature);
+    final status = SensorStatusHelper.getTemperatureStatus(temperature);
 
     return SensorCard(
       title: "Temperature",

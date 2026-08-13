@@ -5,7 +5,7 @@ import 'package:sentinel/core/constants/api_constants.dart';
 import 'package:sentinel/models/sensor_data.dart';
 
 class SensorService {
-  static final String _baseUrl = ApiConstants.baseUrl;
+  static final String _baseUrl = ApiConstants.espBaseUrl;
 
   Future<SensorData> fetchSensorData() async {
     final response = await http.get(Uri.parse('$_baseUrl/sensor'));

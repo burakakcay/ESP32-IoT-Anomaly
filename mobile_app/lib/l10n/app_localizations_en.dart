@@ -9,10 +9,10 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get device => 'Device';
+  String get appName => 'Sentinel';
 
   @override
-  String get lastUpdate => 'Last Update';
+  String get device => 'Device';
 
   @override
   String get connected => 'Connected';
@@ -22,6 +22,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get disconnected => 'Disconnected';
+
+  @override
+  String get lastUpdate => 'Last Update';
+
+  @override
+  String get packets => 'Packets';
+
+  @override
+  String get temperature => 'Temperature';
+
+  @override
+  String get humidity => 'Humidity';
+
+  @override
+  String get acceleration => 'Acceleration';
+
+  @override
+  String get gyroscope => 'Gyroscope';
 
   @override
   String get normal => 'Normal';
@@ -36,14 +54,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get critical => 'Critical';
 
   @override
-  String get temperature => 'Temperature';
+  String get minimum => 'Min';
 
   @override
-  String get humidity => 'Humidity';
+  String get average => 'Average';
 
   @override
-  String get acceleration => 'Acceleration';
+  String get maximum => 'Max';
 
   @override
-  String get gyroscope => 'Gyroscope';
+  String get noData => 'No data available';
+
+  @override
+  String get anomalyStatus => 'Anomaly Status';
+
+  @override
+  String get anomalyDataLoading => 'Anomaly data is loading...';
+
+  @override
+  String get systemNormal => 'System normal. No anomalies detected.';
+
+  @override
+  String anomaliesDetected(int count) {
+    return '$count anomalies detected.';
+  }
+
+  @override
+  String measurementsAnalyzed(int count) {
+    return '$count measurements analyzed.';
+  }
+
+  @override
+  String get latestAnomaly => 'Latest Anomaly';
 }

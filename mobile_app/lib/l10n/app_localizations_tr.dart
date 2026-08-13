@@ -9,10 +9,10 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
-  String get device => 'Cihaz';
+  String get appName => 'Sentinel';
 
   @override
-  String get lastUpdate => 'Son Güncelleme';
+  String get device => 'Cihaz';
 
   @override
   String get connected => 'Bağlı';
@@ -22,6 +22,24 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get disconnected => 'Bağlantı Kesildi';
+
+  @override
+  String get lastUpdate => 'Son Güncelleme';
+
+  @override
+  String get packets => 'Alınan Paket';
+
+  @override
+  String get temperature => 'Sıcaklık';
+
+  @override
+  String get humidity => 'Nem';
+
+  @override
+  String get acceleration => 'İvme';
+
+  @override
+  String get gyroscope => 'Jiroskop';
 
   @override
   String get normal => 'Normal';
@@ -36,14 +54,36 @@ class AppLocalizationsTr extends AppLocalizations {
   String get critical => 'Kritik';
 
   @override
-  String get temperature => 'Sıcaklık';
+  String get minimum => 'Min';
 
   @override
-  String get humidity => 'Nem';
+  String get average => 'Ortalama';
 
   @override
-  String get acceleration => 'İvme';
+  String get maximum => 'Maks';
 
   @override
-  String get gyroscope => 'Jiroskop';
+  String get noData => 'Veri bulunamadı';
+
+  @override
+  String get anomalyStatus => 'Anomali Durumu';
+
+  @override
+  String get anomalyDataLoading => 'Anomali verileri yükleniyor...';
+
+  @override
+  String get systemNormal => 'Sistem normal. Anomali tespit edilemedi.';
+
+  @override
+  String anomaliesDetected(int count) {
+    return '$count anomalies detected.';
+  }
+
+  @override
+  String measurementsAnalyzed(int count) {
+    return '$count measurements analyzed.';
+  }
+
+  @override
+  String get latestAnomaly => 'Son Anomali';
 }

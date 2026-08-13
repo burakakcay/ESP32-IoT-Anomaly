@@ -22,16 +22,21 @@ class DeviceInfoCard extends StatelessWidget {
   final String deviceId;
   final DateTime lastUpdate;
   final bool isConnected;
+  final int _packetCount;
 
   const DeviceInfoCard({
     super.key,
     required this.deviceId,
     required this.lastUpdate,
     required this.isConnected,
+    required this._packetCount
   });
 
   @override
   Widget build(BuildContext context) {
+
+    final l10n = AppLocalizations.of(context)!;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -75,6 +80,17 @@ class DeviceInfoCard extends StatelessWidget {
               DateFormat('dd.MM.yyyy HH:mm').format(lastUpdate),
               style: const TextStyle(fontSize: 13),
             ),
+
+            const SizedBox(height: 12),
+
+            Text(l10n.packets, style: Theme.of(context).textTheme.labelMedium),
+
+            const SizedBox(height: 4),
+
+            Text(
+              _packetCount.toString(),
+              style: Theme.of(context).textTheme.titleMedium,
+            )
           ],
         ),
       ),

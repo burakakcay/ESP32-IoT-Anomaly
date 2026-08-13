@@ -1,0 +1,9 @@
+# Flutter tarafından üretilen dosyalar
+lib/l10n/app_localizations*.dart
+
+# Localization kaynakları
+lib/l10n/*.arb
+
+# Flutter build çıktıları
+.build/
+.dart_tool/

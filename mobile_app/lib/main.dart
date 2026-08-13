@@ -1,14 +1,22 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:sentinel/firebase_options.dart';
 import 'l10n/app_localizations.dart';
 import 'package:sentinel/core/theme/app_theme.dart';
 import 'package:sentinel/screens/dashboard_screen.dart';
-import 'package:sentinel/widgets/cards/temperature_card.dart';
-import 'package:sentinel/widgets/cards/humidity_card.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   runApp(const SentinelApp());
 }
+
+// void main() {
+//   runApp(const SentinelApp());
+// }
 
 class SentinelApp extends StatelessWidget {
   const SentinelApp({super.key});
