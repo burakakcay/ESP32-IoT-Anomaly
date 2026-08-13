@@ -65,11 +65,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       const Duration(seconds: 15),
       (_) => _fetchSensorData(),
     );
-
-    // _anomalyTimer = Timer.periodic(
-    //   const Duration(seconds: 10),
-    //   (_) => _fetchAnomalies(),
-    // );
   }
 
   // ==========================================================
