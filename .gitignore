@@ -18,4 +18,6 @@ learning
 docs
 
 # Backend
-Backend/.env
+backend/.env
+backend/serviceAccountKey.json
+backend/node_modules/

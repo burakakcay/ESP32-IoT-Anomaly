@@ -76,12 +76,12 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String anomaliesDetected(int count) {
-    return '$count anomalies detected.';
+    return '$count anomali tespit edildi.';
   }
 
   @override
   String measurementsAnalyzed(int count) {
-    return '$count measurements analyzed.';
+    return '$count ölçüm analiz edildi.';
   }
 
   @override

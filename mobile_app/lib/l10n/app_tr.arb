@@ -28,7 +28,7 @@
   "anomalyStatus": "Anomali Durumu",
   "anomalyDataLoading": "Anomali verileri yükleniyor...",
   "systemNormal": "Sistem normal. Anomali tespit edilemedi.",
-  "anomaliesDetected": "{count} anomalies detected.",
+  "anomaliesDetected": "{count} anomali tespit edildi.",
   "@anomaliesDetected": {
     "placeholders": {
       "count": {
@@ -37,7 +37,7 @@
     }
   },
 
-  "measurementsAnalyzed": "{count} measurements analyzed.",
+  "measurementsAnalyzed": "{count} ölçüm analiz edildi.",
   "@measurementsAnalyzed": {
     "placeholders": {
       "count": {
