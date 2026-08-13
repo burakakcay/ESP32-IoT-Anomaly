@@ -1,53 +1,57 @@
 {
-  "@@locale": "en",
-
-  "appName": "Sentinel",
-
-  "device": "Device",
-  "connected": "Connected",
-  "connecting": "Connecting",
-  "disconnected": "Disconnected",
-  "lastUpdate": "Last Update",
-  "packets": "Packets",
-
-  "temperature": "Temperature",
-  "humidity": "Humidity",
-  "acceleration": "Acceleration",
-  "gyroscope": "Gyroscope",
-
-  "normal": "Normal",
-  "warning": "Warning",
-  "high": "High",
-  "critical": "Critical",
-
-  "minimum": "Min",
-  "average": "Average",
-  "maximum": "Max",
-  "noData": "No data available",
-
-  "anomalyStatus": "Anomaly Status",
-  "anomalyDataLoading": "Anomaly data is loading...",
-  "systemNormal": "System normal. No anomalies detected.",
-  "anomaliesDetected": "{count} anomalies detected.",
-  "@anomaliesDetected": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-
-  "measurementsAnalyzed": "{count} measurements analyzed.",
-  "@measurementsAnalyzed": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "latestAnomaly": "Latest Anomaly",
-  "aiAnalysis": "AI Anomaly Analysis",
-  "aiAnalysisLoading": "AI analysis is loading...",
-  "possibleCause": "Possible Cause",
-  "affectedSensors": "Affected Sensors"
+	"@@locale": "en",
+	"appName": "Sentinel",
+	"device": "Device",
+	"connected": "Connected",
+	"connecting": "Connecting",
+	"disconnected": "Disconnected",
+	"lastUpdate": "Last Update",
+	"packets": "Packets",
+	"temperature": "Temperature",
+	"humidity": "Humidity",
+	"acceleration": "Acceleration",
+	"gyroscope": "Gyroscope",
+	"normal": "Normal",
+	"warning": "Warning",
+	"high": "High",
+	"critical": "Critical",
+	"minimum": "Min",
+	"average": "Average",
+	"maximum": "Max",
+	"noData": "No data available",
+	"anomalyStatus": "Anomaly Status",
+	"anomalyDataLoading": "Anomaly data is loading...",
+	"systemNormal": "System normal. No anomalies detected.",
+	"anomaliesDetected": "{count} anomalies detected.",
+	"@anomaliesDetected": {
+		"placeholders": {
+			"count": {
+				"type": "int"
+			}
+		}
+	},
+	"measurementsAnalyzed": "{count} measurements analyzed.",
+	"@measurementsAnalyzed": {
+		"placeholders": {
+			"count": {
+				"type": "int"
+			}
+		}
+	},
+	"latestAnomaly": "Latest Anomaly",
+	"aiAnalysis": "AI Anomaly Analysis",
+	"aiAnalysisLoading": "AI analysis is loading...",
+	"possibleCause": "Possible Cause",
+	"affectedSensors": "Affected Sensors",
+	"anomalyHistory": "Anomaly History",
+	"detectedAnomalies": "Detected Anomalies",
+	"analyzedMeasurements": "Measurements Analyzed",
+	"unusualValuesDetected": "Unusual values detected in {count} sensors.",
+	"@unusualValuesDetected": {
+		"placeholders": {
+			"count": {
+				"type": "int"
+			}
+		}
+	}
 }

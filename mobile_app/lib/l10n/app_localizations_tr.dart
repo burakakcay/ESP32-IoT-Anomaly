@@ -98,4 +98,18 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get affectedSensors => 'Etkilenen Sensörler';
+
+  @override
+  String get anomalyHistory => 'Anomali Geçmişi';
+
+  @override
+  String get detectedAnomalies => 'Tespit Edilen Anomali';
+
+  @override
+  String get analyzedMeasurements => 'İncelenen Ölçüm';
+
+  @override
+  String unusualValuesDetected(int count) {
+    return '$count sensörde olağan dışı değer tespit edildi.';
+  }
 }

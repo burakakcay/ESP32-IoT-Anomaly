@@ -17,7 +17,7 @@ class SensorCard extends StatelessWidget {
     this.unit,
     required this.icon,
     required this.status,
-    this.onTap
+    this.onTap,
   });
 
   @override

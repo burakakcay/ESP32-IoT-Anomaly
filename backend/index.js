@@ -40,6 +40,11 @@ async function getReadings(limit = READING_LIMIT) {
 	return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 }
 
+async function getLatestReading() {
+	const readings = await getReadings(1);
+	return readings[0] || null;
+}
+
 async function getAnomalyResponse() {
 	if (
 		anomalyCache !== null &&
@@ -123,6 +128,26 @@ app.get("/api/readings", async (req, res) => {
 	} catch (error) {
 		console.error("Firestore okuma hatası:", error);
 		res.status(500).json({ error: "Sensör verileri alınamadı." });
+	}
+}); 
+
+app.get("/api/readings/latest", async (req, res) => {
+	try {
+		const reading = await getLatestReading();
+
+		if (reading === null) {
+			return res.status(404).json({
+				error: "Sensör verisi bulunamadı.",
+			});
+		}
+
+		res.json(reading);
+	} catch (error) {
+		console.error("Son sensör verisi okuma hatası:", error);
+
+		res.status(500).json({
+			error: "Son sensör verisi alınamadı.",
+		});
 	}
 });
 

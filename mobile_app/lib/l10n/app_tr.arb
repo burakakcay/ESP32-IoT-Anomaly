@@ -1,53 +1,57 @@
 {
-  "@@locale": "tr",
-
-  "appName": "Sentinel",
-
-  "device": "Cihaz",
-  "connected": "Bağlı",
-  "connecting": "Bağlanıyor",
-  "disconnected": "Bağlantı Kesildi",
-  "lastUpdate": "Son Güncelleme",
-  "packets": "Alınan Paket",
-
-  "temperature": "Sıcaklık",
-  "humidity": "Nem",
-  "acceleration": "İvme",
-  "gyroscope": "Jiroskop",
-
-  "normal": "Normal",
-  "warning": "Uyarı",
-  "high": "Yüksek",
-  "critical": "Kritik",
-
-  "minimum": "Min",
-  "average": "Ortalama",
-  "maximum": "Maks",
-  "noData": "Veri bulunamadı",
-
-  "anomalyStatus": "Anomali Durumu",
-  "anomalyDataLoading": "Anomali verileri yükleniyor...",
-  "systemNormal": "Sistem normal. Anomali tespit edilemedi.",
-  "anomaliesDetected": "{count} anomali tespit edildi.",
-  "@anomaliesDetected": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-
-  "measurementsAnalyzed": "{count} ölçüm analiz edildi.",
-  "@measurementsAnalyzed": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "latestAnomaly": "Son Anomali",
-  "aiAnalysis": "Yapay Zeka Anomali Yorumu",
-  "aiAnalysisLoading": "Yapay zeka analizi yükleniyor...",
-  "possibleCause": "Olası Neden",
-  "affectedSensors": "Etkilenen Sensörler"
+	"@@locale": "tr",
+	"appName": "Sentinel",
+	"device": "Cihaz",
+	"connected": "Bağlı",
+	"connecting": "Bağlanıyor",
+	"disconnected": "Bağlantı Kesildi",
+	"lastUpdate": "Son Güncelleme",
+	"packets": "Alınan Paket",
+	"temperature": "Sıcaklık",
+	"humidity": "Nem",
+	"acceleration": "İvme",
+	"gyroscope": "Jiroskop",
+	"normal": "Normal",
+	"warning": "Uyarı",
+	"high": "Yüksek",
+	"critical": "Kritik",
+	"minimum": "Min",
+	"average": "Ortalama",
+	"maximum": "Maks",
+	"noData": "Veri bulunamadı",
+	"anomalyStatus": "Anomali Durumu",
+	"anomalyDataLoading": "Anomali verileri yükleniyor...",
+	"systemNormal": "Sistem normal. Anomali tespit edilemedi.",
+	"anomaliesDetected": "{count} anomali tespit edildi.",
+	"@anomaliesDetected": {
+		"placeholders": {
+			"count": {
+				"type": "int"
+			}
+		}
+	},
+	"measurementsAnalyzed": "{count} ölçüm analiz edildi.",
+	"@measurementsAnalyzed": {
+		"placeholders": {
+			"count": {
+				"type": "int"
+			}
+		}
+	},
+	"latestAnomaly": "Son Anomali",
+	"aiAnalysis": "Yapay Zeka Anomali Yorumu",
+	"aiAnalysisLoading": "Yapay zeka analizi yükleniyor...",
+	"possibleCause": "Olası Neden",
+	"affectedSensors": "Etkilenen Sensörler",
+	"anomalyHistory": "Anomali Geçmişi",
+	"detectedAnomalies": "Tespit Edilen Anomali",
+	"analyzedMeasurements": "İncelenen Ölçüm",
+	"unusualValuesDetected": "{count} sensörde olağan dışı değer tespit edildi.",
+	"@unusualValuesDetected": {
+		"placeholders": {
+			"count": {
+				"type": "int"
+			}
+		}
+	}
 }

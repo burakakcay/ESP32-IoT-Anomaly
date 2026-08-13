@@ -9,20 +9,16 @@ import 'package:sentinel/core/constants/api_constants.dart';
 class ApiService {
   static Future<SensorData> getLatestSensorData() async {
     final response = await http.get(
-      Uri.parse('${ApiConstants.nodeBaseUrl}/api/readings'),
+      Uri.parse('${ApiConstants.nodeBaseUrl}/api/readings/latest'),
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Sensör verileri alınamadı: ${response.statusCode}');
+      throw Exception('Son sensör verisi alınamadı: ${response.statusCode}');
     }
 
-    final jsonData = jsonDecode(response.body);
+    final jsonData = jsonDecode(response.body) as Map<String, dynamic>;
 
-    if (jsonData is! List || jsonData.isEmpty) {
-      throw Exception('Sensör verisi bulunamadı.');
-    }
-
-    return SensorData.fromFirestoreJson(jsonData.first as Map<String, dynamic>);
+    return SensorData.fromFirestoreJson(jsonData);
   }
 
   static Future<AnomalyResponse> getAnomalies() async {

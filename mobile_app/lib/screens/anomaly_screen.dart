@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sentinel/l10n/app_localizations.dart';
 import 'package:sentinel/models/anomaly.dart';
 import 'package:sentinel/services/api_service.dart';
 import 'package:sentinel/widgets/cards/ai_analysis_card.dart';
@@ -14,6 +15,7 @@ class AnomalyScreen extends StatefulWidget {
 
 class _AnomalyScreenState extends State<AnomalyScreen> {
   AiAnomalyResponse? _aiAnomalyResponse;
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -34,10 +36,11 @@ class _AnomalyScreenState extends State<AnomalyScreen> {
       debugPrint('AI anomali verileri alınamadı: $e');
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Anomaliler")),
+      appBar: AppBar(title: Text(l10n.anomalyHistory)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -48,11 +51,11 @@ class _AnomalyScreenState extends State<AnomalyScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _buildStatistic(
-                    title: "Anomali",
+                    title: l10n.detectedAnomalies,
                     value: widget.anomalyResponse.anomalyReadings.toString(),
                   ),
                   _buildStatistic(
-                    title: "Analiz",
+                    title: l10n.analyzedMeasurements,
                     value: widget.anomalyResponse.analyzedReadings.toString(),
                   ),
                 ],
@@ -99,11 +102,11 @@ class _AnomalyScreenState extends State<AnomalyScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              '${anomaly.anomalyCount} sensörde olağan dışı değişim tespit edildi.',
+              l10n.unusualValuesDetected(anomaly.anomalyCount),
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            Text('Etkilenen sensörler: $affectedSensors'),
+            Text('${l10n.affectedSensors}: $affectedSensors'),
           ],
         ),
       ),

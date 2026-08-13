@@ -4,5 +4,5 @@ class ApiConstants {
   static const nodeBaseUrl = "http://192.168.1.105:3000";
 
   static const readingsEndpoint = '$nodeBaseUrl/api/readings';
-  static const anomaliesEndpoint = '$nodeBaseUrl/api/anomalies';    
+  static const anomaliesEndpoint = '$nodeBaseUrl/api/anomalies';
 }

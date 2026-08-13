@@ -60,7 +60,7 @@ class SensorStatusHelper {
     }
   }
 
-static SensorStatus getAccelerationStatus(Acceleration acceleration) {
+  static SensorStatus getAccelerationStatus(Acceleration acceleration) {
     final x = acceleration.x.toDouble();
     final y = acceleration.y.toDouble();
     final z = acceleration.z.toDouble();

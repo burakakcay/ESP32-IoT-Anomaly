@@ -49,10 +49,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   SensorData? _sensorData;
   Timer? _refreshTimer;
-  Timer? _anomalyTimer;
 
   bool _isConnected = false;
-  int _packetCount = 0;
 
   // ==========================================================
   // Lifecycle Methods
@@ -62,13 +60,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
 
     _fetchSensorData();
-
     _fetchAnomalies();
 
-    // _refreshTimer = Timer.periodic(
-    //   const Duration(seconds: 2),
-    //   (_) => _fetchSensorData(),
-    // );
+    _refreshTimer = Timer.periodic(
+      const Duration(seconds: 15),
+      (_) => _fetchSensorData(),
+    );
 
     // _anomalyTimer = Timer.periodic(
     //   const Duration(seconds: 10),
@@ -85,13 +82,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       if (!mounted) return;
 
+      final isRecentReading =
+          DateTime.now().difference(data.timestamp) <=
+          const Duration(seconds: 45);
+
       setState(() {
         _sensorData = data;
-        _isConnected = true;
-        _packetCount++;
+        _isConnected = isRecentReading;
       });
+
+      _historyService.add(data);
     } catch (e) {
       debugPrint("Sensör verisi okunamadı: $e");
+
+      if (!mounted) return;
+
+      setState(() {
+        _isConnected = false;
+      });
     }
   }
 
@@ -168,7 +176,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
               deviceId: _sensorData?.deviceId ?? "ESP32_Node_001",
               lastUpdate: _sensorData?.timestamp ?? DateTime.now(),
               isConnected: _isConnected,
-              packetCount: _packetCount,
             ),
 
             const SizedBox(height: 16),
@@ -250,7 +257,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void dispose() {
     _refreshTimer?.cancel();
-    _anomalyTimer?.cancel();
     super.dispose();
   }
 }

@@ -271,6 +271,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Affected Sensors'**
   String get affectedSensors;
+
+  /// No description provided for @anomalyHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Anomaly History'**
+  String get anomalyHistory;
+
+  /// No description provided for @detectedAnomalies.
+  ///
+  /// In en, this message translates to:
+  /// **'Detected Anomalies'**
+  String get detectedAnomalies;
+
+  /// No description provided for @analyzedMeasurements.
+  ///
+  /// In en, this message translates to:
+  /// **'Measurements Analyzed'**
+  String get analyzedMeasurements;
+
+  /// No description provided for @unusualValuesDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'Unusual values detected in {count} sensors.'**
+  String unusualValuesDetected(int count);
 }
 
 class _AppLocalizationsDelegate

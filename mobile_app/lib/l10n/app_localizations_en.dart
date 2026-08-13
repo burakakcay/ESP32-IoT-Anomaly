@@ -98,4 +98,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get affectedSensors => 'Affected Sensors';
+
+  @override
+  String get anomalyHistory => 'Anomaly History';
+
+  @override
+  String get detectedAnomalies => 'Detected Anomalies';
+
+  @override
+  String get analyzedMeasurements => 'Measurements Analyzed';
+
+  @override
+  String unusualValuesDetected(int count) {
+    return 'Unusual values detected in $count sensors.';
+  }
 }

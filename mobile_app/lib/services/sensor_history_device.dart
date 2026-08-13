@@ -62,11 +62,13 @@ class SensorHistoryService {
 
     return temperatures.reduce((a, b) => a < b ? a : b);
   }
+
   double? get maxTemperature {
     if (_history.isEmpty) return null;
 
     return temperatures.reduce((a, b) => a > b ? a : b);
   }
+
   double? get averageTemperature {
     if (_history.isEmpty) return null;
 
@@ -80,11 +82,13 @@ class SensorHistoryService {
 
     return humidities.reduce((a, b) => a < b ? a : b);
   }
+
   double? get maxHumidity {
     if (_history.isEmpty) return null;
 
     return humidities.reduce((a, b) => a > b ? a : b);
   }
+
   double? get averageHumidity {
     if (_history.isEmpty) return null;
 

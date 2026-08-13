@@ -63,7 +63,7 @@ class SensorData {
     };
   }
 
-factory SensorData.fromFirestoreJson(Map<String, dynamic> json) {
+  factory SensorData.fromFirestoreJson(Map<String, dynamic> json) {
     return SensorData(
       deviceId: json["device_id"] as String,
       timestamp: DateTime.parse(json["timestamp"] as String),
