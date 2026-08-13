@@ -28,7 +28,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // Services
   // ==========================================================
 
-  // final SensorService _sensorService = SensorService();
   final SensorHistoryService _historyService = SensorHistoryService();
 
   void _openSensorDetail(SensorType type) {
