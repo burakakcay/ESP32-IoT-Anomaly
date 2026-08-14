@@ -1,23 +1,4 @@
-/// ------------------------------------------------------------
-/// SensorData Model
-/// ------------------------------------------------------------
-///
-/// ESP32 tarafından gönderilen tek bir sensör paketini temsil eder.
-///
-/// JSON örneği:
-///
-/// {
-///   "device_id": "...",
-///   "sicaklik": 28.5,
-///   "nem": 52.1,
-///   ...
-/// }
-///
-/// Bu model:
-/// - JSON -> Dart dönüşümü yapar.
-/// - Dart -> JSON dönüşümü yapar.
-///
-/// ------------------------------------------------------------
+/// ESP32'den gelen sensör paketini JSON ile Dart arasında dönüştürür.
 library;
 
 import 'package:sentinel/models/acceleration.dart';

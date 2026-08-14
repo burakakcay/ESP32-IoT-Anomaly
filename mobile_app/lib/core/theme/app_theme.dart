@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppTheme {
   AppTheme._();
 
-  // Colors
+  // Renkler
   static const Color backgroundColor = Color(0xFF121212);
   static const Color surfaceColor = Color(0xFF1E1E1E);
 

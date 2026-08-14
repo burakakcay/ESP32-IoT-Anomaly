@@ -1,9 +1,12 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:sentinel/core/enums/sensor_type.dart';
 import 'package:sentinel/l10n/app_localizations.dart';
 
 class SensorChart extends StatelessWidget {
+  final SensorType sensorType;
   final List values;
+
   final List timestamps;
 
   final List? valuesX;
@@ -15,6 +18,8 @@ class SensorChart extends StatelessWidget {
 
   const SensorChart({
     super.key,
+
+    required this.sensorType,
     required this.values,
     required this.timestamps,
 
@@ -73,25 +78,13 @@ class SensorChart extends StatelessWidget {
         : values.isEmpty) {
       return SizedBox(height: 250, child: Center(child: Text(l10n.noData)));
     }
-    final List<double> allValues;
 
-    if (isThreeAxis) {
-      allValues = [
-        ...chartValuesX!.map<double>((e) => e.toDouble()),
-        ...chartValuesY!.map<double>((e) => e.toDouble()),
-        ...chartValuesZ!.map<double>((e) => e.toDouble()),
-      ];
-    } else {
-      allValues = values.map<double>((e) => e.toDouble()).toList();
-    }
-
-    final double minValue = allValues.reduce((a, b) => a < b ? a : b);
-
-    final double maxValue = allValues.reduce((a, b) => a > b ? a : b);
-
-    final range = maxValue - minValue;
-
-    final padding = range == 0 ? 1.0 : range * 0.15;
+    final (minY, maxY, horizontalInterval) = switch (sensorType) {
+      SensorType.temperature => (10.0, 60.0, 5.0),
+      SensorType.humidity => (20.0, 80.0, 10.0),
+      SensorType.acceleration => (-2.0, 2.0, 0.5),
+      SensorType.gyroscope => (-250.0, 250.0, 50.0),
+    };
 
     return SizedBox(
       height: 360,
@@ -104,17 +97,95 @@ class SensorChart extends StatelessWidget {
                 LineChartData(
                   minX: 0,
                   maxX: (chartLength - 1).toDouble(),
-                  minY: minValue - padding,
-                  maxY: maxValue + padding,
+                  minY: minY,
+                  maxY: maxY,
 
                   gridData: FlGridData(
                     show: true,
-                    drawVerticalLine: true,
-                    horizontalInterval: range == 0 ? 0.5 : range / 5,
-                    verticalInterval: 5,
+                    drawVerticalLine: false,
+                    horizontalInterval: horizontalInterval,
+                    getDrawingHorizontalLine: (value) {
+                      return FlLine(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        strokeWidth: 1,
+                        dashArray: [6, 6],
+                      );
+                    },
                   ),
 
                   borderData: FlBorderData(show: true),
+
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: LineTouchTooltipData(
+                      fitInsideHorizontally: true,
+                      fitInsideVertically: true,
+                      tooltipPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
+                      getTooltipItems: (touchedSpots) {
+                        const axisNames = ['X', 'Y', 'Z'];
+
+                        return touchedSpots.asMap().entries.map((entry) {
+                          final spot = entry.value;
+                          final time = timestamps[spot.spotIndex];
+
+                          final formattedTime =
+                              "${time.hour.toString().padLeft(2, '0')}:"
+                              "${time.minute.toString().padLeft(2, '0')}:"
+                              "${time.second.toString().padLeft(2, '0')}";
+
+                          final formattedValue = switch (sensorType) {
+                            SensorType.temperature =>
+                              '${spot.y.toStringAsFixed(1)} °C',
+                            SensorType.humidity =>
+                              '${spot.y.toStringAsFixed(1)} %',
+                            SensorType.acceleration =>
+                              '${spot.y.toStringAsFixed(2)} g',
+                            SensorType.gyroscope =>
+                              '${spot.y.toStringAsFixed(1)} °/s',
+                          };
+
+                          final axisLabel = isThreeAxis
+                              ? '${axisNames[spot.barIndex]}: '
+                              : '';
+
+                          final valueColor =
+                              spot.bar.color ?? Colors.cyanAccent;
+
+                          if (entry.key == 0) {
+                            return LineTooltipItem(
+                              formattedTime,
+                              const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: '\n$axisLabel$formattedValue',
+                                  style: TextStyle(
+                                    color: valueColor,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            );
+                          }
+
+                          return LineTooltipItem(
+                            '$axisLabel$formattedValue',
+                            TextStyle(
+                              color: valueColor,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          );
+                        }).toList();
+                      },
+                    ),
+                  ),
 
                   titlesData: FlTitlesData(
                     topTitles: const AxisTitles(

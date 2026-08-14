@@ -1,15 +1,4 @@
-/// ------------------------------------------------------------
-/// GyroscopeCard
-/// ------------------------------------------------------------
-///
-/// MPU6050 sensöründen gelen jiroskop (X, Y, Z) verilerini gösterir.
-///
-/// Kart:
-/// - Jiroskop eksenlerini gösterir.
-/// - SensorStatusHelper ile durum hesaplar.
-/// - StatusDot ile durum bilgisini gösterir.
-///
-/// ------------------------------------------------------------
+/// MPU6050 jiroskop ölçümlerini ve hesaplanan sensör durumunu gösterir.
 library;
 
 import 'package:flutter/material.dart';

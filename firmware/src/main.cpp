@@ -15,11 +15,11 @@
 
 struct SensorReading
 {
-    // DHT22 ölçümleri
+    // DHT22 ölçümleri.
     float temperature;
     float humidity;
 
-    // MPU6050 ham ivme ve jiroskop ölçümleri
+    // MPU6050 ham ivme ve jiroskop ölçümleri.
     int16_t accelX;
     int16_t accelY;
     int16_t accelZ;
@@ -28,12 +28,12 @@ struct SensorReading
     int16_t gyroY;
     int16_t gyroZ;
 
-    // Aynı ölçüm çevrimine ait zaman bilgisi
+    // Aynı ölçüm çevrimine ait zaman bilgisi.
     String timestamp;
     bool hasValidTime;
 };
 
-// Fonksiyon prototipleri
+// Fonksiyon bildirimleri
 bool connectWifi();
 void processFirestoreResult(AsyncResult &aResult);
 SensorReading readSensorData();
@@ -45,18 +45,24 @@ void resyncTimeIfNeeded();
 void startNetworkServices();
 void reconnectWifiIfNeeded();
 
-DHT dht(5, DHT22); // DHT22 sensörünün bağlı olduğu GPIO pini
+// DHT22 sensörünün bağlı olduğu GPIO pini.
+DHT dht(5, DHT22);
 MPU6050 mpu;
 WebServer server(80);
 
 FirebaseApp app;
 Firestore::Documents Docs;
 
-const uint32_t WIFI_TIMEOUT_MS = 15000;                          // WiFi bağlantısı için zaman aşımı süresi (15 saniye)
-const uint32_t NTP_TIMEOUT_MS = 10000;                           // NTP sunucusundan zaman almak için zaman aşımı süresi (10 saniye)
-const uint32_t RESYNC_INTERVAL_MS = 24UL * 60UL * 60UL * 1000UL; // NTP zamanını yeniden senkronize etmek için aralık (24 saat)
+// Wi-Fi bağlantısı için zaman aşımı süresi: 15 saniye.
+const uint32_t WIFI_TIMEOUT_MS = 15000;
 
-const char deviceId[] = "ESP32_Sensor_Node_001"; // Cihaz kimliği
+// NTP sunucusundan zaman almak için zaman aşımı süresi: 10 saniye.
+const uint32_t NTP_TIMEOUT_MS = 10000;
+
+// NTP yeniden senkronizasyon aralığı: 24 saat.
+const uint32_t RESYNC_INTERVAL_MS = 24UL * 60UL * 60UL * 1000UL;
+
+const char deviceId[] = "ESP32_Sensor_Node_001";
 
 SSL_CLIENT ssl_client;
 
@@ -69,38 +75,37 @@ UserAuth user_auth(
     FIREBASE_USER_PASSWORD,
     3000);
 
-// Kimlik doğrulama mesajını yalnızca bir kez yazdırmak için kullanılır.
+// Firebase kimlik doğrulamasının bildirildiği bilgisini tutar.
 bool firebaseReady = false;
 
-// HTTP sunucusu ve Firebase istemcisi başarıyla başlatıldıktan sonra true olur.
+// HTTP sunucusu ile Firebase istemcisinin başlatılma durumunu tutar.
 bool networkServicesStarted = false;
 
-// Periyodik Firestore gönderimi ve Wi-Fi yeniden bağlanma zamanlayıcıları.
+// Firestore gönderimi ile Wi-Fi yeniden bağlanma zamanlarını tutar.
 unsigned long lastFirestoreSend = 0;
 unsigned long lastWifiReconnectAttempt = 0;
 
-// Firestore kotasını korumak için sensör verisi 15 saniyede bir gönderilir.
+// Firestore kotasını korumak için sensör verilerini 15 saniyede bir gönderir.
 const unsigned long FIRESTORE_INTERVAL = 15000;
 const unsigned long WIFI_RETRY_INTERVAL = 30000;
 
-// ============================================================
 // ESP32 yaşam döngüsü
-// ============================================================
 
 void setup()
 {
     Serial.begin(115200);
 
-    // Sensörler başlatılıyor.
-    Wire.begin(21, 22); // I2C pinlerini tanımla (SDA: GPIO21, SCL: GPIO22);
-    mpu.initialize();   // MPU6050 sensörünü başlat
-    dht.begin();        // DHT sensörünü başlat
+    // Sensörleri başlat (SDA: GPIO21, SCL: GPIO22).
+    Wire.begin(21, 22);
+    mpu.initialize();
+    dht.begin();
 
     // MPU6050 bağlantısını başlangıçta doğrula.
     if (mpu.testConnection() ? Serial.println("{\"status\":\"boot_ok\"}") : Serial.println("{\"status\":\"mpu_couldn't_initialize\"}"))
         ;
 
-    delay(2000); // Sensörlerin stabil hale gelmesi için kısa bir gecikme
+    // Sensörlerin kararlı duruma gelmesini bekle.
+    delay(2000);
 
     if (connectWifi())
     {
@@ -137,7 +142,7 @@ void loop()
 
     resyncTimeIfNeeded();
 
-    // Ağ, Firebase ve zaman hazırsa tek bir ölçüm snapshot'ını Firestore'a yaz.
+    // Ağ, Firebase ve zaman hazırsa tek bir ölçüm anlık görüntüsünü Firestore'a yaz.
     if (
         networkServicesStarted &&
         WiFi.status() == WL_CONNECTED &&
@@ -160,13 +165,11 @@ void loop()
     }
 }
 
-// ============================================================
 // Wi-Fi ve ağ servisleri
-// ============================================================
 
 bool connectWifi()
 {
-    WiFi.mode(WIFI_STA); //
+    WiFi.mode(WIFI_STA);
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     uint32_t startAttemptTime = millis();
 
@@ -180,15 +183,13 @@ bool connectWifi()
     return WiFi.status() == WL_CONNECTED;
 }
 
-// ============================================================
 // Sensör okuma ve HTTP JSON yanıtı
-// ============================================================
 
 SensorReading readSensorData()
 {
     SensorReading reading;
 
-    // Her sensörü yalnızca bir kez oku; aynı snapshot hem JSON hem Firestore'da kullanılır.
+    // Her sensörü yalnızca bir kez oku; aynı ölçümü hem JSON hem Firestore için kullan.
     reading.temperature = dht.readTemperature();
     reading.humidity = dht.readHumidity();
 
@@ -202,7 +203,7 @@ SensorReading readSensorData()
 
     struct tm localTime;
 
-    // Zaman yoksa Firestore'a sıralanabilir/geçerli bir kayıt yazma.
+    // Geçerli zaman yoksa Firestore'a sıralanabilir bir kayıt yazma.
     if (!getLocalTime(&localTime))
     {
         reading.hasValidTime = false;
@@ -225,7 +226,7 @@ SensorReading readSensorData()
 
 void startNetworkServices()
 {
-    // Aynı servisleri ikinci kez başlatmayı önle.
+    // Ağ servislerinin birden fazla kez başlatılmasını önle.
     if (networkServicesStarted)
     {
         return;
@@ -253,7 +254,7 @@ void startNetworkServices()
         Serial.println("{\"status\":\"wifi_connected_but_time_not_set\"}");
     }
 
-    // Yerel ağdaki hızlı tanılama/ölçüm görüntüleme endpoint'i.
+    // Yerel ağda hızlı tanılama ve ölçüm görüntüleme uç noktası.
     server.on("/sensor", HTTP_GET, handleSensor);
     server.begin();
 
@@ -330,7 +331,7 @@ String createSensorJson(const SensorReading &reading)
 
 void handleSensor()
 {
-    // HTTP isteği için yeni ve tutarlı bir ölçüm snapshot'ı oluştur.
+    // HTTP isteği için yeni ve tutarlı bir ölçüm anlık görüntüsü oluştur.
     SensorReading reading = readSensorData();
 
     if (!reading.hasValidTime)
@@ -348,13 +349,11 @@ void handleSensor()
         createSensorJson(reading));
 }
 
-// ============================================================
 // Zaman senkronizasyonu
-// ============================================================
 
 bool syncTimeFromNTP()
 {
-    // Firestore'da sıralanabilir yerel zaman damgası üretmek için NTP kullanılır.
+    // Firestore için sıralanabilir yerel zaman damgasını NTP ile üret.
     configTime(0, 0, NTP_SERVER);
     setenv("TZ", TZ_INFO, 1);
     tzset();
@@ -399,9 +398,7 @@ void resyncTimeIfNeeded()
     }
 }
 
-// ============================================================
 // Firestore
-// ============================================================
 
 void createSensorDocument(const SensorReading &reading)
 {
@@ -411,7 +408,7 @@ void createSensorDocument(const SensorReading &reading)
         return;
     }
 
-    // readings alt koleksiyonunda otomatik belge kimliği oluşturulur.
+    // `readings` alt koleksiyonunda otomatik belge kimliği oluştur.
     String documentPath =
         "devices/" +
         String(deviceId) +
@@ -506,7 +503,7 @@ void createSensorDocument(const SensorReading &reading)
 
 void processFirestoreResult(AsyncResult &aResult)
 {
-    // FirebaseClient asenkron sonucu yoksa işlenecek bir durum da yoktur.
+    // FirebaseClient asenkron sonucu yoksa işlenecek durum da yoktur.
     if (!aResult.isResult())
         return;
 

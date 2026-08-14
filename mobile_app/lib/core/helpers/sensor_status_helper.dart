@@ -1,27 +1,4 @@
-/// ------------------------------------------------------------
-/// SensorStatusHelper
-/// ------------------------------------------------------------
-///
-/// Sensör verilerini yorumlar.
-///
-/// Bu sınıf:
-/// - Sıcaklığı değerlendirir.
-/// - Nemi değerlendirir.
-/// - Sonuç olarak bir SensorStatus döndürür.
-///
-/// Örnek:
-///
-/// final status =
-///     SensorStatusHelper.temperatureStatus(42);
-///
-/// Sonuç:
-///
-/// SensorStatus.warning
-///
-/// Bu sınıf UI ile ilgilenmez.
-/// Sadece iş mantığını (Business Logic) içerir.
-///
-/// ------------------------------------------------------------
+/// Sensör ölçümlerini yorumlayarak uygun sensör durumunu belirler.
 library;
 
 import 'dart:math';

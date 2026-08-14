@@ -1,15 +1,4 @@
-/// ------------------------------------------------------------
-/// DeviceInfoCard
-/// ------------------------------------------------------------
-///
-/// ESP32 cihazına ait temel bilgileri gösterir.
-///
-/// Gösterilen bilgiler:
-/// - Cihaz Kimliği
-/// - Son Güncelleme Zamanı
-/// - Bağlantı Durumu
-///
-/// ------------------------------------------------------------
+/// ESP32 cihazının kimliğini, son güncelleme zamanını ve bağlantı durumunu gösterir.
 library;
 
 import 'package:flutter/material.dart';
@@ -32,6 +21,8 @@ class DeviceInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -42,30 +33,33 @@ class DeviceInfoCard extends StatelessWidget {
             Row(
               children: [
                 const Icon(Icons.memory),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
 
                 Expanded(
                   child: Text(
-                    deviceId,
+                    deviceId.replaceAll('_', ' '),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-
-                StatusDot(
-                  status: isConnected
-                      ? SensorStatus.normal
-                      : SensorStatus.critical,
-                ),
               ],
             ),
 
             const SizedBox(height: 12),
 
+            StatusDot(
+              status: isConnected ? SensorStatus.normal : SensorStatus.critical,
+              label: isConnected ? l10n.connected : l10n.disconnected,
+            ),
+
+            const SizedBox(height: 16),
+
             Text(
-              AppLocalizations.of(context)!.lastUpdate,
+              l10n.lastUpdate,
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
 

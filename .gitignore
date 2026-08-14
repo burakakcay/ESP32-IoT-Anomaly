@@ -1,23 +1,66 @@
-# PlatformIO
-firmware/.pio/
-firmware/.vscode/
-
-# Flutter
-mobile_app/.dart_tool/
-mobile_app/build/
-mobile_app/.idea/
-
-# Android
-mobile_app/android/.gradle/
-mobile_app/android/local.properties
-
 # General
 .DS_Store
 Thumbs.db
-learning
-docs
+
+# PlatformIO
+firmware/.pio/
+firmware/.vscode/
+firmware/include/secrets.h
 
 # Backend
 backend/.env
 backend/serviceAccountKey.json
 backend/node_modules/
+backend/**/*.log
+
+# Flutter miscellaneous
+mobile_app/**/*.class
+mobile_app/**/*.log
+mobile_app/**/*.pyc
+mobile_app/**/*.swp
+mobile_app/**/.atom/
+mobile_app/**/.build/
+mobile_app/**/.buildlog/
+mobile_app/**/.history
+mobile_app/**/.svn/
+mobile_app/**/.swiftpm/
+mobile_app/**/migrate_working_dir/
+
+# IntelliJ
+mobile_app/**/*.iml
+mobile_app/**/*.ipr
+mobile_app/**/*.iws
+mobile_app/**/.idea/
+
+# Flutter, Dart and Pub
+mobile_app/**/doc/api/
+mobile_app/**/ios/Flutter/.last_build_id
+mobile_app/**/.dart_tool/
+mobile_app/**/.flutter-plugins-dependencies
+mobile_app/**/.pub-cache/
+mobile_app/**/.pub/
+mobile_app/build/
+mobile_app/coverage/
+
+# Flutter symbolication and obfuscation
+mobile_app/**/app.*.symbols
+mobile_app/**/app.*.map.json
+
+# Android build outputs
+mobile_app/android/app/debug/
+mobile_app/android/app/profile/
+mobile_app/android/app/release/
+mobile_app/android/**/gradle-wrapper.jar
+mobile_app/android/.gradle/
+mobile_app/android/captures/
+mobile_app/android/gradlew
+mobile_app/android/gradlew.bat
+mobile_app/android/local.properties
+mobile_app/android/**/GeneratedPluginRegistrant.java
+mobile_app/android/**/.cxx/
+mobile_app/android/.kotlin/
+
+# Android signing files
+mobile_app/android/**/key.properties
+mobile_app/android/**/*.keystore
+mobile_app/android/**/*.jks

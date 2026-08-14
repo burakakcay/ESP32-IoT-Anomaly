@@ -1,11 +1,4 @@
-/// ------------------------------------------------------------
-/// Gyroscope Model
-/// ------------------------------------------------------------
-///
-/// MPU6050 sensöründen gelen
-/// açısal hız (X, Y, Z) verilerini temsil eder.
-///
-/// ------------------------------------------------------------
+/// MPU6050 sensöründen gelen X, Y ve Z eksenlerindeki açısal hız verilerini temsil eder.
 library;
 
 class Gyroscope {

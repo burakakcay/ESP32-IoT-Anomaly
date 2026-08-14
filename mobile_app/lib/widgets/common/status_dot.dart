@@ -1,30 +1,4 @@
-/// ------------------------------------------------------------
-/// StatusDot Widget
-/// ------------------------------------------------------------
-///
-/// Görev:
-/// SensorStatus enum'unu ekranda görsel olarak göstermek.
-///
-/// Gösterim:
-/// ● Normal
-/// ● Warning
-/// ● High
-/// ● Critical
-///
-/// Bu widget:
-/// - Duruma göre rengi belirler.
-/// - Duruma göre yazıyı belirler.
-/// - Küçük bir durum göstergesi oluşturur.
-///
-/// Kullanım:
-///
-/// StatusDot(
-///   status: SensorStatus.normal,
-/// )
-///
-/// Bu widget sadece gösterimden sorumludur.
-///
-/// ------------------------------------------------------------
+/// Sensör durumunu renkli bir nokta ve isteğe bağlı etiketle gösterir.
 library;
 
 import 'package:flutter/material.dart';
@@ -35,8 +9,14 @@ import 'package:sentinel/l10n/app_localizations.dart';
 class StatusDot extends StatelessWidget {
   final SensorStatus status;
   final bool showLabel;
+  final String? label;
 
-  const StatusDot({super.key, required this.status, this.showLabel = true});
+  const StatusDot({
+    super.key,
+    required this.status,
+    this.showLabel = true,
+    this.label,
+  });
 
   Color get statusColor {
     switch (status) {
@@ -84,7 +64,7 @@ class StatusDot extends StatelessWidget {
           const SizedBox(width: 8),
 
           Text(
-            statusText(context),
+            label ?? statusText(context),
             style: TextStyle(color: statusColor, fontWeight: FontWeight.w600),
           ),
         ],

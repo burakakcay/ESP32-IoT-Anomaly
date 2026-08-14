@@ -14,6 +14,7 @@ const app = express();
 const PORT = 3000;
 const DEVICE_ID = "ESP32_Sensor_Node_001";
 const READING_LIMIT = 60;
+const DASHBOARD_READING_LIMIT = 240;
 const MIN_BASELINE_SIZE = 20;
 const ANOMALY_CACHE_DURATION = 10000;
 const AI_CACHE_DURATION = 60000;
@@ -45,6 +46,23 @@ async function getLatestReading() {
 	return readings[0] || null;
 }
 
+function buildAnomalyResponse(readings) {
+	if (readings.length < MIN_BASELINE_SIZE + 1) {
+		const error = new Error(
+			`Anomali analizi için en az ${MIN_BASELINE_SIZE + 1} ölçüm gerekli.`,
+		);
+		error.statusCode = 400;
+		throw error;
+	}
+
+	const analysis = calculateAnomalyResults(readings, MIN_BASELINE_SIZE);
+
+	return {
+		device_id: DEVICE_ID,
+		...analysis,
+	};
+}
+
 async function getAnomalyResponse() {
 	if (
 		anomalyCache !== null &&
@@ -55,19 +73,29 @@ async function getAnomalyResponse() {
 	}
 
 	console.log("Anomaly cache süresi doldu. Firestore okunuyor...");
-	const readings = await getReadings();
-	if (readings.length < MIN_BASELINE_SIZE + 1) {
-		const error = new Error(
-			`Anomali analizi için en az ${MIN_BASELINE_SIZE + 1} ölçüm gerekli.`,
-		);
-		error.statusCode = 400;
-		throw error;
-	}
 
-	const analysis = calculateAnomalyResults(readings, MIN_BASELINE_SIZE);
-	anomalyCache = { device_id: DEVICE_ID, ...analysis };
+	const readings = await getReadings();
+
+	anomalyCache = buildAnomalyResponse(readings);
 	anomalyCacheTime = Date.now();
+
 	return anomalyCache;
+}
+
+async function getDashboardResponse() {
+	const readings = await getReadings(DASHBOARD_READING_LIMIT);
+
+	// Anomali hesabında yalnızca en yeni 60 ölçümü kullan.
+	const anomalyReadings = readings.slice(0, READING_LIMIT);
+	const anomalies = buildAnomalyResponse(anomalyReadings);
+
+	anomalyCache = anomalies;
+	anomalyCacheTime = Date.now();
+
+	return {
+		readings,
+		anomalies,
+	};
 }
 
 async function analyzeAnomaliesWithAI(anomalyResults) {
@@ -121,6 +149,18 @@ ${JSON.stringify(anomalyResults)}`;
 
 	return JSON.parse(response.text);
 }
+
+app.get("/api/dashboard", async (req, res) => {
+	try {
+		res.json(await getDashboardResponse());
+	} catch (error) {
+		console.error("Dashboard verileri alınamadı:", error);
+
+		res
+			.status(error.statusCode || 500)
+			.json({ error: error.message || "Dashboard verileri alınamadı." });
+	}
+});
 
 app.get("/api/readings", async (req, res) => {
 	try {
@@ -195,9 +235,8 @@ app.get("/api/anomalies/ai", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-	console.log(
-		`Backend başladı. Readings: http://localhost:${PORT}/api/readings`,
-	);
+	console.log(`Backend başladı.`);
+	console.log(`Readings: http://localhost:${PORT}/api/readings`);
 	console.log(`Anomalies: http://localhost:${PORT}/api/anomalies`);
 	console.log(`AI anomalies: http://localhost:${PORT}/api/anomalies/ai`);
 });

@@ -1,15 +1,4 @@
-/// ------------------------------------------------------------
-/// AccelerationCard
-/// ------------------------------------------------------------
-///
-/// MPU6050 sensöründen gelen ivme (X, Y, Z) verilerini gösterir.
-///
-/// Kart:
-/// - İvme eksenlerini gösterir.
-/// - SensorStatusHelper ile durum hesaplar.
-/// - StatusDot ile durum bilgisini gösterir.
-///
-/// ------------------------------------------------------------
+/// MPU6050 ivme ölçümlerini ve hesaplanan sensör durumunu gösterir.
 library;
 
 import 'package:flutter/material.dart';

@@ -24,9 +24,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  // ==========================================================
-  // Services
-  // ==========================================================
+  // Hizmetler
 
   final SensorHistoryService _historyService = SensorHistoryService();
 
@@ -42,24 +40,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ==========================================================
-  // State Variables
-  // ==========================================================
+  // Durum değişkenleri
 
   SensorData? _sensorData;
   Timer? _refreshTimer;
 
   bool _isConnected = false;
 
-  // ==========================================================
-  // Lifecycle Methods
-  // ==========================================================
+  // Yaşam döngüsü
   @override
   void initState() {
     super.initState();
 
-    _fetchSensorData();
-    _fetchAnomalies();
+    _fetchDashboardData();
 
     _refreshTimer = Timer.periodic(
       const Duration(seconds: 15),
@@ -67,9 +60,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // ==========================================================
-  // Data Loading
-  // ==========================================================
+  // Veri yükleme
+  Future<void> _fetchDashboardData() async {
+    try {
+      final data = await ApiService.getDashboardData();
+
+      if (data.readings.isEmpty) {
+        throw Exception("Sensör geçmişi bulunamadı.");
+      }
+
+      if (!mounted) return;
+
+      for (final reading in data.readings) {
+        _historyService.add(reading);
+      }
+
+      final latestReading = data.readings.last;
+
+      final isRecentReading =
+          DateTime.now().difference(latestReading.timestamp) <=
+          const Duration(seconds: 45);
+
+      setState(() {
+        _sensorData = latestReading;
+        _isConnected = isRecentReading;
+        _anomalyResponse = data.anomalies;
+      });
+    } catch (e) {
+      debugPrint("Dashboard verileri alınamadı: $e");
+
+      if (!mounted) return;
+
+      setState(() {
+        _isConnected = false;
+      });
+    }
+  }
+
   Future<void> _fetchSensorData() async {
     try {
       final data = await ApiService.getLatestSensorData();
@@ -97,9 +124,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  // ==========================================================
-  // Anomaly Data
-  // ==========================================================
+  // Anomali verileri
 
   AnomalyResponse? _anomalyResponse;
 
@@ -109,27 +134,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
 
     return _anomalyResponse!.results.last;
-  }
-
-  Future<void> _fetchAnomalies() async {
-    try {
-      final data = await ApiService.getAnomalies();
-
-      for (final result in data.results) {
-        debugPrint(
-          "${result.timestamp} | "
-          "Anomali sayısı: ${result.anomalyCount}",
-        );
-      }
-
-      if (!mounted) return;
-
-      setState(() {
-        _anomalyResponse = data;
-      });
-    } catch (e) {
-      debugPrint("Anomali verileri alınamadı: $e");
-    }
   }
 
   String? get _latestAnomalyTime {
@@ -153,9 +157,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         "${dateTime.second.toString().padLeft(2, '0')}";
   }
 
-  // ==========================================================
-  // UI
-  // ==========================================================
+  // Kullanıcı arayüzü
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;

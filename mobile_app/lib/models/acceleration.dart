@@ -1,11 +1,4 @@
-/// ------------------------------------------------------------
-/// Acceleration Model
-/// ------------------------------------------------------------
-///
-/// MPU6050 sensöründen gelen
-/// ivme (X, Y, Z) verilerini temsil eder.
-///
-/// ------------------------------------------------------------
+/// MPU6050 sensöründen gelen X, Y ve Z eksenlerindeki ivme verilerini temsil eder.
 library;
 
 class Acceleration {

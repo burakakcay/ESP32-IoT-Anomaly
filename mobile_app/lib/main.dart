@@ -14,10 +14,6 @@ Future<void> main() async {
   runApp(const SentinelApp());
 }
 
-// void main() {
-//   runApp(const SentinelApp());
-// }
-
 class SentinelApp extends StatelessWidget {
   const SentinelApp({super.key});
 

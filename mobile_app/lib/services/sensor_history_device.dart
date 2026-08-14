@@ -1,23 +1,10 @@
-/// ------------------------------------------------------------
-/// SensorHistoryService
-/// ------------------------------------------------------------
-///
-/// Sensör geçmişini RAM üzerinde tutar.
-///
-/// Görevleri:
-/// - Yeni veri eklemek
-/// - Geçmiş verileri okumak
-/// - Son veriyi döndürmek
-/// - Geçmişi temizlemek
-/// - Grafikler için veri sağlamak
-///
-/// ------------------------------------------------------------
+/// Sensör geçmişini bellekte tutar ve grafikler için veri sağlar.
 library;
 
 import 'package:sentinel/models/sensor_data.dart';
 
 class SensorHistoryService {
-  static const int maxHistory = 100;
+  static const int maxHistory = 240;
 
   final List<SensorData> _history = [];
 

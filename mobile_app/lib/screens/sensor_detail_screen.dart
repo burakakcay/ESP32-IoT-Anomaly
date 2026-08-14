@@ -161,6 +161,7 @@ class SensorDetailScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             SensorChart(
+              sensorType: sensorType,
               values: getChartValues(),
               timestamps: historyService.timestamps,
               valuesX: getChartValuesX(),
