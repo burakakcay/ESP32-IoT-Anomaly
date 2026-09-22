@@ -1,24 +1,10 @@
 require("dotenv").config();
+const config = require("./config/app_config");
 
-const { GoogleGenAI } = require("@google/genai");
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
-
-const config = require("./config/app_config");
+const { GoogleGenAI } = require("@google/genai");
 const serviceAccount = require("./serviceAccountKey.json");
-const { createApp } = require("./app");
-
-const {
-  getReadings: fetchReadings,
-  getLatestReading: fetchLatestReadings,
-} = require("./repositories/readings.repository");
-
-const { createSensorService } = require("./services/sensor_service");
-const { createAIResponseService } = require("./services/ai_response_service");
-
-const { createReadingsRouter } = require("./routes/readings.routes");
-const { createDashboardRouter } = require("./routes/dashboard.routes");
-const { createAnomaliesRouter } = require("./routes/anomalies.routes");
 
 const {
   port: PORT,
@@ -27,9 +13,24 @@ const {
   aiCacheDuration: AI_CACHE_DURATION,
 } = config;
 
+const {
+  getReadings: fetchReadings,
+  getLatestReading: fetchLatestReadings,
+} = require("./repositories/readings.repository");
+
+const { createApp } = require("./app");
+
+const { createSensorService } = require("./services/sensor_service");
+const { createAIResponseService } = require("./services/ai_response_service");
+
+const { createReadingsRouter } = require("./routes/readings.routes");
+const { createDashboardRouter } = require("./routes/dashboard.routes");
+const { createAnomaliesRouter } = require("./routes/anomalies.routes");
+
 initializeApp({ credential: cert(serviceAccount) });
 
 const db = getFirestore();
+const app = createApp();
 
 const gemini = process.env.GEMINI_API_KEY
   ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
@@ -54,8 +55,6 @@ const { getAIResponse } = createAIResponseService({
   deviceId: DEVICE_ID,
   cacheDuration: AI_CACHE_DURATION,
 });
-
-const app = createApp();
 
 app.use(
   "/api/readings",
