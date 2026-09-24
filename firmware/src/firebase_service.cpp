@@ -150,7 +150,7 @@ void sendReadingToFirestore(
     Values::IntegerValue gyroZValue(reading.gyroZ);
 
     Document<Values::Value> doc(
-        "device_Id", Values::Value(deviceIdValue));
+        "device_id", Values::Value(deviceIdValue));
     doc.add("timestamp", Values::Value(timestampValue));
     if (!isnan(reading.temperature))
     {

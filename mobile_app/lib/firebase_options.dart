@@ -54,7 +54,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyD781lgaXB95OzX7sN7ACfwiv3ZJF1b6Ls',
-    appId: '1:991272507643:android:34ccf321dde8f02e2bb85e',
+    appId: '1:991272507643:android:e6c0a32238ad9e372bb85e',
     messagingSenderId: '991272507643',
     projectId: 'esp32-iot-anomali',
     storageBucket: 'esp32-iot-anomali.firebasestorage.app',

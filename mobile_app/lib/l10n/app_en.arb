@@ -53,5 +53,24 @@
 				"type": "int"
 			}
 		}
-	}
+	},
+	"connectionChecking": "Checking",
+	"deviceStale": "Data outdated",
+	"serverUnavailable": "Server unreachable",
+	"sensorDataError": "Data error",
+	"loginTitle": "Sign in",
+	"emailLabel": "Email",
+	"passwordLabel": "Password",
+	"signInButton": "Sign in",
+	"signingIn": "Signing in…",
+	"loginFieldsRequired": "Enter your email and password.",
+	"loginInvalidCredentials": "Incorrect email or password.",
+	"loginNetworkError": "Check your internet connection.",
+	"loginTooManyRequests": "Too many attempts. Please try again later.",
+	"loginFailed": "Unable to sign in. Please try again.",
+	"signOutButton": "Sign out",
+	"loginSubtitle": "Keep track of your sensors.",
+	"showPassword": "Show password",
+	"hidePassword": "Hide password",
+	"signOutFailed": "Unable to sign out. Please try again."
 }

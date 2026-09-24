@@ -53,5 +53,24 @@
 				"type": "int"
 			}
 		}
-	}
+	},
+	"connectionChecking": "Kontrol ediliyor",
+	"deviceStale": "Veri güncel değil",
+	"serverUnavailable": "Sunucuya ulaşılamıyor",
+	"sensorDataError": "Veri hatası",
+	"loginTitle": "Oturum aç",
+	"emailLabel": "E-posta",
+	"passwordLabel": "Parola",
+	"signInButton": "Giriş yap",
+	"signingIn": "Giriş yapılıyor…",
+	"loginFieldsRequired": "E-posta ve parolanızı girin.",
+	"loginInvalidCredentials": "E-posta veya parola hatalı.",
+	"loginNetworkError": "İnternet bağlantınızı kontrol edin.",
+	"loginTooManyRequests": "Çok fazla deneme yapıldı. Biraz sonra tekrar deneyin.",
+	"loginFailed": "Giriş yapılamadı. Lütfen tekrar deneyin.",
+	"signOutButton": "Çıkış yap",
+	"loginSubtitle": "Sensörlerini takip et.",
+	"showPassword": "Parolayı göster",
+	"hidePassword": "Parolayı gizle",
+	"signOutFailed": "Çıkış yapılamadı. Lütfen tekrar deneyin."
 }

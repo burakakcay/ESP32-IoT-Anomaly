@@ -295,6 +295,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unusual values detected in {count} sensors.'**
   String unusualValuesDetected(int count);
+
+  /// No description provided for @connectionChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking'**
+  String get connectionChecking;
+
+  /// No description provided for @deviceStale.
+  ///
+  /// In en, this message translates to:
+  /// **'Data outdated'**
+  String get deviceStale;
+
+  /// No description provided for @serverUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Server unreachable'**
+  String get serverUnavailable;
+
+  /// No description provided for @sensorDataError.
+  ///
+  /// In en, this message translates to:
+  /// **'Data error'**
+  String get sensorDataError;
+
+  /// No description provided for @loginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get loginTitle;
+
+  /// No description provided for @emailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get emailLabel;
+
+  /// No description provided for @passwordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get passwordLabel;
+
+  /// No description provided for @signInButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get signInButton;
+
+  /// No description provided for @signingIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Signing in…'**
+  String get signingIn;
+
+  /// No description provided for @loginFieldsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email and password.'**
+  String get loginFieldsRequired;
+
+  /// No description provided for @loginInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect email or password.'**
+  String get loginInvalidCredentials;
+
+  /// No description provided for @loginNetworkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your internet connection.'**
+  String get loginNetworkError;
+
+  /// No description provided for @loginTooManyRequests.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Please try again later.'**
+  String get loginTooManyRequests;
+
+  /// No description provided for @loginFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to sign in. Please try again.'**
+  String get loginFailed;
+
+  /// No description provided for @signOutButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get signOutButton;
+
+  /// No description provided for @loginSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep track of your sensors.'**
+  String get loginSubtitle;
+
+  /// No description provided for @showPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get showPassword;
+
+  /// No description provided for @hidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get hidePassword;
+
+  /// No description provided for @signOutFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to sign out. Please try again.'**
+  String get signOutFailed;
 }
 
 class _AppLocalizationsDelegate

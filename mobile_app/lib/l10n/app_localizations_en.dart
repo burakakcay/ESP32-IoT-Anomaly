@@ -112,4 +112,62 @@ class AppLocalizationsEn extends AppLocalizations {
   String unusualValuesDetected(int count) {
     return 'Unusual values detected in $count sensors.';
   }
+
+  @override
+  String get connectionChecking => 'Checking';
+
+  @override
+  String get deviceStale => 'Data outdated';
+
+  @override
+  String get serverUnavailable => 'Server unreachable';
+
+  @override
+  String get sensorDataError => 'Data error';
+
+  @override
+  String get loginTitle => 'Sign in';
+
+  @override
+  String get emailLabel => 'Email';
+
+  @override
+  String get passwordLabel => 'Password';
+
+  @override
+  String get signInButton => 'Sign in';
+
+  @override
+  String get signingIn => 'Signing in…';
+
+  @override
+  String get loginFieldsRequired => 'Enter your email and password.';
+
+  @override
+  String get loginInvalidCredentials => 'Incorrect email or password.';
+
+  @override
+  String get loginNetworkError => 'Check your internet connection.';
+
+  @override
+  String get loginTooManyRequests =>
+      'Too many attempts. Please try again later.';
+
+  @override
+  String get loginFailed => 'Unable to sign in. Please try again.';
+
+  @override
+  String get signOutButton => 'Sign out';
+
+  @override
+  String get loginSubtitle => 'Keep track of your sensors.';
+
+  @override
+  String get showPassword => 'Show password';
+
+  @override
+  String get hidePassword => 'Hide password';
+
+  @override
+  String get signOutFailed => 'Unable to sign out. Please try again.';
 }

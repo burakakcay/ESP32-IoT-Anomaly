@@ -112,4 +112,62 @@ class AppLocalizationsTr extends AppLocalizations {
   String unusualValuesDetected(int count) {
     return '$count sensörde olağan dışı değer tespit edildi.';
   }
+
+  @override
+  String get connectionChecking => 'Kontrol ediliyor';
+
+  @override
+  String get deviceStale => 'Veri güncel değil';
+
+  @override
+  String get serverUnavailable => 'Sunucuya ulaşılamıyor';
+
+  @override
+  String get sensorDataError => 'Veri hatası';
+
+  @override
+  String get loginTitle => 'Oturum aç';
+
+  @override
+  String get emailLabel => 'E-posta';
+
+  @override
+  String get passwordLabel => 'Parola';
+
+  @override
+  String get signInButton => 'Giriş yap';
+
+  @override
+  String get signingIn => 'Giriş yapılıyor…';
+
+  @override
+  String get loginFieldsRequired => 'E-posta ve parolanızı girin.';
+
+  @override
+  String get loginInvalidCredentials => 'E-posta veya parola hatalı.';
+
+  @override
+  String get loginNetworkError => 'İnternet bağlantınızı kontrol edin.';
+
+  @override
+  String get loginTooManyRequests =>
+      'Çok fazla deneme yapıldı. Biraz sonra tekrar deneyin.';
+
+  @override
+  String get loginFailed => 'Giriş yapılamadı. Lütfen tekrar deneyin.';
+
+  @override
+  String get signOutButton => 'Çıkış yap';
+
+  @override
+  String get loginSubtitle => 'Sensörlerini takip et.';
+
+  @override
+  String get showPassword => 'Parolayı göster';
+
+  @override
+  String get hidePassword => 'Parolayı gizle';
+
+  @override
+  String get signOutFailed => 'Çıkış yapılamadı. Lütfen tekrar deneyin.';
 }

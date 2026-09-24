@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
 import 'package:sentinel/core/enums/sensor_status.dart';
 import 'package:sentinel/core/enums/sensor_type.dart';
 import 'package:sentinel/core/helpers/sensor_status_helper.dart';
@@ -9,12 +11,14 @@ import 'package:sentinel/models/sensor_data.dart';
 import 'package:sentinel/screens/anomaly_screen.dart';
 import 'package:sentinel/screens/sensor_detail_screen.dart';
 import 'package:sentinel/services/api_service.dart';
+import 'package:sentinel/services/auth_service.dart';
 import 'package:sentinel/services/sensor_history_device.dart';
 import 'package:sentinel/widgets/cards/acceleration_card.dart';
 import 'package:sentinel/widgets/cards/anomaly_card.dart';
 import 'package:sentinel/widgets/cards/device_info_card.dart';
 import 'package:sentinel/widgets/cards/gyroscope_card.dart';
 import 'package:sentinel/widgets/cards/sensor_card.dart';
+import 'package:sentinel/core/enums/device_connection_status.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -25,6 +29,28 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   // Hizmetler
+
+  bool _isSigningOut = false;
+
+  Future<void> _signOut() async {
+    if (_isSigningOut) return;
+
+    setState(() => _isSigningOut = true);
+
+    try {
+      await AuthService.signOut();
+    } catch (_) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.signOutFailed)),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSigningOut = false);
+      }
+    }
+  }
 
   final SensorHistoryService _historyService = SensorHistoryService();
 
@@ -40,12 +66,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  DeviceConnectionStatus _statusForError(Object error) {
+    if (error is http.ClientException || error is TimeoutException) {
+      return DeviceConnectionStatus.serverUnavailable;
+    }
+
+    return DeviceConnectionStatus.dataError;
+  }
+
   // Durum değişkenleri
 
   SensorData? _sensorData;
   Timer? _refreshTimer;
 
-  bool _isConnected = false;
+  DeviceConnectionStatus _connectionStatus = DeviceConnectionStatus.checking;
 
   // Yaşam döngüsü
   @override
@@ -83,7 +117,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       setState(() {
         _sensorData = latestReading;
-        _isConnected = isRecentReading;
+        _connectionStatus = isRecentReading
+            ? DeviceConnectionStatus.online
+            : DeviceConnectionStatus.stale;
         _anomalyResponse = data.anomalies;
       });
     } catch (e) {
@@ -92,7 +128,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (!mounted) return;
 
       setState(() {
-        _isConnected = false;
+        _connectionStatus = _statusForError(e);
       });
     }
   }
@@ -109,7 +145,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       setState(() {
         _sensorData = data;
-        _isConnected = isRecentReading;
+        _connectionStatus = isRecentReading
+            ? DeviceConnectionStatus.online
+            : DeviceConnectionStatus.stale;
       });
 
       _historyService.add(data);
@@ -119,7 +157,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (!mounted) return;
 
       setState(() {
-        _isConnected = false;
+        _connectionStatus = _statusForError(e);
       });
     }
   }
@@ -164,7 +202,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Sentinel")),
+      appBar: AppBar(
+        title: Text(l10n.appName),
+        actions: [
+          IconButton(
+            tooltip: l10n.signOutButton,
+            onPressed: _isSigningOut ? null : _signOut,
+            icon: _isSigningOut
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.logout_rounded),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -172,7 +226,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             DeviceInfoCard(
               deviceId: _sensorData?.deviceId ?? "ESP32_Node_001",
               lastUpdate: _sensorData?.timestamp ?? DateTime.now(),
-              isConnected: _isConnected,
+              connectionStatus: _connectionStatus,
             ),
 
             const SizedBox(height: 16),

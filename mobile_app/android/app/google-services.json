@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:991272507643:android:e6c0a32238ad9e372bb85e",
+        "android_client_info": {
+          "package_name": "com.burakakcay.sentinel"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD781lgaXB95OzX7sN7ACfwiv3ZJF1b6Ls"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:991272507643:android:34ccf321dde8f02e2bb85e",
         "android_client_info": {
           "package_name": "com.example.sentinel"
