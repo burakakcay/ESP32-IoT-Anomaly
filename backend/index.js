@@ -4,7 +4,9 @@ const config = require("./config/app_config");
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 const { GoogleGenAI } = require("@google/genai");
-const serviceAccount = require("./serviceAccountKey.json");
+const serviceAccount = require(
+  process.env.FIREBASE_SERVICE_ACCOUNT_PATH || "./serviceAccountKey.json",
+);
 
 const {
   port: PORT,
@@ -26,11 +28,18 @@ const { createAIResponseService } = require("./services/ai_response_service");
 const { createReadingsRouter } = require("./routes/readings.routes");
 const { createDashboardRouter } = require("./routes/dashboard.routes");
 const { createAnomaliesRouter } = require("./routes/anomalies.routes");
+const { requireAuth } = require("./middleware/auth.middleware");
 
 initializeApp({ credential: cert(serviceAccount) });
 
 const db = getFirestore();
 const app = createApp();
+
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
+app.use("/api", requireAuth);
 
 const gemini = process.env.GEMINI_API_KEY
   ? new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
