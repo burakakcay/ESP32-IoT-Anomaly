@@ -170,4 +170,11 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get signOutFailed => 'Çıkış yapılamadı. Lütfen tekrar deneyin.';
+
+  @override
+  String get serverConnecting => 'Sunucuya bağlanılıyor…';
+
+  @override
+  String get aiAnalysisFailed =>
+      'Yapay zeka analizi alınamadı. Daha sonra tekrar deneyin.';
 }

@@ -170,4 +170,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get signOutFailed => 'Unable to sign out. Please try again.';
+
+  @override
+  String get serverConnecting => 'Connecting to server…';
+
+  @override
+  String get aiAnalysisFailed =>
+      'Unable to load AI analysis. Please try again later.';
 }

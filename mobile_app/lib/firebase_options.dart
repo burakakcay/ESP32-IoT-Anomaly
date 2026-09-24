@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -57,6 +54,14 @@ class DefaultFirebaseOptions {
     appId: '1:991272507643:android:e6c0a32238ad9e372bb85e',
     messagingSenderId: '991272507643',
     projectId: 'esp32-iot-anomali',
+    storageBucket: 'esp32-iot-anomali.firebasestorage.app',
+  );
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyAic9Ne0fs112_m8oErHKecZduu529mZ5o',
+    appId: '1:991272507643:web:9f268530f0ee3ae32bb85e',
+    messagingSenderId: '991272507643',
+    projectId: 'esp32-iot-anomali',
+    authDomain: 'esp32-iot-anomali.firebaseapp.com',
     storageBucket: 'esp32-iot-anomali.firebasestorage.app',
   );
 }

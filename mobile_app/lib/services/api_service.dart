@@ -10,7 +10,10 @@ import 'package:sentinel/core/constants/api_constants.dart';
 class ApiService {
   static Future<({List<SensorData> readings, AnomalyResponse anomalies})>
   getDashboardData() async {
-    final response = await _get('/api/dashboard');
+    final response = await _get(
+      '/api/dashboard',
+      timeout: const Duration(seconds: 60),
+    );
 
     if (response.statusCode != 200) {
       throw Exception('Dashboard verileri alınamadı: ${response.statusCode}');
@@ -38,17 +41,16 @@ class ApiService {
     String path, {
     Duration timeout = const Duration(seconds: 10),
   }) async {
-    final token = await AuthService.getIdToken();
-
-    return http
-        .get(
-          Uri.parse('${ApiConstants.nodeBaseUrl}$path'),
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Accept': 'application/json',
-          },
-        )
-        .timeout(timeout);
+    return (() async {
+      final token = await AuthService.getIdToken();
+      return http.get(
+        Uri.parse('${ApiConstants.nodeBaseUrl}$path'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+    })().timeout(timeout);
   }
 
   static Future<SensorData> getLatestSensorData() async {

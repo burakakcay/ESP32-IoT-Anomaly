@@ -72,5 +72,7 @@
 	"loginSubtitle": "Keep track of your sensors.",
 	"showPassword": "Show password",
 	"hidePassword": "Hide password",
-	"signOutFailed": "Unable to sign out. Please try again."
+	"signOutFailed": "Unable to sign out. Please try again.",
+	"serverConnecting": "Connecting to server…",
+	"aiAnalysisFailed": "Unable to load AI analysis. Please try again later."
 }

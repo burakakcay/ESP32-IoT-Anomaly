@@ -7,8 +7,8 @@ import 'package:sentinel/models/gyroscope.dart';
 class SensorData {
   final String deviceId;
   final DateTime timestamp;
-  final double temperature;
-  final double humidity;
+  final double? temperature;
+  final double? humidity;
 
   final Acceleration acceleration;
   final Gyroscope gyroscope;
@@ -26,8 +26,8 @@ class SensorData {
     return SensorData(
       deviceId: json["device_id"],
       timestamp: DateTime.parse(json["zaman"]),
-      temperature: (json["sicaklik"] as num).toDouble(),
-      humidity: (json["nem"] as num).toDouble(),
+      temperature: _optionalMeasurement(json["sicaklik"]),
+      humidity: _optionalMeasurement(json["nem"]),
       acceleration: Acceleration.fromJson(json["ivme"]),
       gyroscope: Gyroscope.fromJson(json["jiro"]),
     );
@@ -48,8 +48,8 @@ class SensorData {
     return SensorData(
       deviceId: json["device_id"] as String,
       timestamp: DateTime.parse(json["timestamp"] as String),
-      temperature: (json["temperature"] as num).toDouble(),
-      humidity: (json["humidity"] as num).toDouble(),
+      temperature: _optionalMeasurement(json["temperature"]),
+      humidity: _optionalMeasurement(json["humidity"]),
       acceleration: Acceleration(
         x: (json["accel_x"] as num).toInt(),
         y: (json["accel_y"] as num).toInt(),
@@ -61,5 +61,11 @@ class SensorData {
         z: (json["gyro_z"] as num).toInt(),
       ),
     );
+  }
+
+  static double? _optionalMeasurement(Object? value) {
+    if (value == null) return null;
+    final number = (value as num).toDouble();
+    return number.isFinite ? number : null;
   }
 }

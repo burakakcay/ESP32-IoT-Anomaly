@@ -12,7 +12,7 @@ function createApp() {
     }),
   );
 
-  app.use(express.json);
+  app.use(express.json());
 
   return app;
 }

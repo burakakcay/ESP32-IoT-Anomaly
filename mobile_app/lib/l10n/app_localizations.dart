@@ -409,6 +409,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unable to sign out. Please try again.'**
   String get signOutFailed;
+
+  /// No description provided for @serverConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting to server…'**
+  String get serverConnecting;
+
+  /// No description provided for @aiAnalysisFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load AI analysis. Please try again later.'**
+  String get aiAnalysisFailed;
 }
 
 class _AppLocalizationsDelegate

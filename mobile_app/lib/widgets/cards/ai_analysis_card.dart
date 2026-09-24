@@ -5,8 +5,15 @@ import 'package:sentinel/models/anomaly.dart';
 
 class AiAnalysisCard extends StatelessWidget {
   final AiAnomalyResponse? response;
+  final bool isLoading;
+  final bool hasError;
 
-  const AiAnalysisCard({super.key, required this.response});
+  const AiAnalysisCard({
+    super.key,
+    required this.response,
+    required this.isLoading,
+    required this.hasError,
+  });
 
   Color _severityColor(String severity) {
     switch (severity) {
@@ -39,60 +46,81 @@ class AiAnalysisCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final aiAnalysis = response?.aiAnalysis;
 
+    if (isLoading || hasError || aiAnalysis == null) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              if (isLoading)
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              else
+                Icon(
+                  Icons.error_outline,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  isLoading ? l10n.aiAnalysisLoading : l10n.aiAnalysisFailed,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: aiAnalysis == null
-            ? Row(
-                children: [
-                  const Icon(Icons.auto_awesome),
-                  const SizedBox(width: 12),
-                  Text(l10n.aiAnalysisLoading),
-                ],
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        _severityIcon(aiAnalysis.severity),
-                        color: _severityColor(aiAnalysis.severity),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          l10n.aiAnalysis,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  _severityIcon(aiAnalysis.severity),
+                  color: _severityColor(aiAnalysis.severity),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    l10n.aiAnalysis,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  const SizedBox(height: 12),
-                  Text(aiAnalysis.summary),
-                  if (aiAnalysis.possibleCause != null) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      l10n.possibleCause,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(aiAnalysis.possibleCause!),
-                  ],
-                  if (aiAnalysis.affectedSensors.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      l10n.affectedSensors,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(aiAnalysis.affectedSensors.join(', ')),
-                  ],
-                ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(aiAnalysis.summary),
+            if (aiAnalysis.possibleCause != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                l10n.possibleCause,
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
+              const SizedBox(height: 4),
+              Text(aiAnalysis.possibleCause!),
+            ],
+            if (aiAnalysis.affectedSensors.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                l10n.affectedSensors,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text(aiAnalysis.affectedSensors.join(', ')),
+            ],
+          ],
+        ),
       ),
     );
   }

@@ -78,6 +78,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   SensorData? _sensorData;
   Timer? _refreshTimer;
+  bool _isFetching = false;
 
   DeviceConnectionStatus _connectionStatus = DeviceConnectionStatus.checking;
 
@@ -90,12 +91,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     _refreshTimer = Timer.periodic(
       const Duration(seconds: 15),
-      (_) => _fetchSensorData(),
+      (_) => _sensorData == null ? _fetchDashboardData() : _fetchSensorData(),
     );
   }
 
   // Veri yükleme
   Future<void> _fetchDashboardData() async {
+    if (_isFetching) return;
+    _isFetching = true;
+    setState(() => _connectionStatus = DeviceConnectionStatus.checking);
+
     try {
       final data = await ApiService.getDashboardData();
 
@@ -122,18 +127,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
             : DeviceConnectionStatus.stale;
         _anomalyResponse = data.anomalies;
       });
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint("Dashboard verileri alınamadı: $e");
+      debugPrintStack(stackTrace: stackTrace);
 
       if (!mounted) return;
 
       setState(() {
         _connectionStatus = _statusForError(e);
       });
+    } finally {
+      _isFetching = false;
     }
   }
 
   Future<void> _fetchSensorData() async {
+    if (_isFetching) return;
+    _isFetching = true;
     try {
       final data = await ApiService.getLatestSensorData();
 
@@ -159,6 +169,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       setState(() {
         _connectionStatus = _statusForError(e);
       });
+    } finally {
+      _isFetching = false;
     }
   }
 
@@ -225,7 +237,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             DeviceInfoCard(
               deviceId: _sensorData?.deviceId ?? "ESP32_Node_001",
-              lastUpdate: _sensorData?.timestamp ?? DateTime.now(),
+              lastUpdate: _sensorData?.timestamp,
               connectionStatus: _connectionStatus,
             ),
 
@@ -241,30 +253,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 SensorCard(
                   title: l10n.temperature,
-                  value: _sensorData == null
-                      ? "--"
-                      : _sensorData!.temperature.toStringAsFixed(1),
+                  value: _sensorData?.temperature?.toStringAsFixed(1) ?? "--",
                   unit: "°C",
                   icon: Icons.thermostat,
-                  status: _sensorData == null
+                  status: _sensorData?.temperature == null
                       ? SensorStatus.normal
                       : SensorStatusHelper.getTemperatureStatus(
-                          _sensorData!.temperature,
+                          _sensorData!.temperature!,
                         ),
                   onTap: () => _openSensorDetail(SensorType.temperature),
                 ),
 
                 SensorCard(
                   title: l10n.humidity,
-                  value: _sensorData == null
-                      ? "--"
-                      : _sensorData!.humidity.toStringAsFixed(1),
+                  value: _sensorData?.humidity?.toStringAsFixed(1) ?? "--",
                   unit: "%",
                   icon: Icons.water_drop,
-                  status: _sensorData == null
+                  status: _sensorData?.humidity == null
                       ? SensorStatus.normal
                       : SensorStatusHelper.getHumidityStatus(
-                          _sensorData!.humidity,
+                          _sensorData!.humidity!,
                         ),
                   onTap: () => _openSensorDetail(SensorType.humidity),
                 ),

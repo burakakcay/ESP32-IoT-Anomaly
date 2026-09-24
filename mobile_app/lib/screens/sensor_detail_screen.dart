@@ -163,7 +163,11 @@ class SensorDetailScreen extends StatelessWidget {
             SensorChart(
               sensorType: sensorType,
               values: getChartValues(),
-              timestamps: historyService.timestamps,
+              timestamps: switch (sensorType) {
+                SensorType.temperature => historyService.temperatureTimestamps,
+                SensorType.humidity => historyService.humidityTimestamps,
+                _ => historyService.timestamps,
+              },
               valuesX: getChartValuesX(),
               valuesY: getChartValuesY(),
               valuesZ: getChartValuesZ(),

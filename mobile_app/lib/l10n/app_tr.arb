@@ -72,5 +72,7 @@
 	"loginSubtitle": "Sensörlerini takip et.",
 	"showPassword": "Parolayı göster",
 	"hidePassword": "Parolayı gizle",
-	"signOutFailed": "Çıkış yapılamadı. Lütfen tekrar deneyin."
+	"signOutFailed": "Çıkış yapılamadı. Lütfen tekrar deneyin.",
+	"serverConnecting": "Sunucuya bağlanılıyor…",
+	"aiAnalysisFailed": "Yapay zeka analizi alınamadı. Daha sonra tekrar deneyin."
 }

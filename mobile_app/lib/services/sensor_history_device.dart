@@ -10,9 +10,21 @@ class SensorHistoryService {
 
   List<SensorData> get history => List.unmodifiable(_history);
 
-  List<double> get temperatures => _history.map((e) => e.temperature).toList();
+  List<double> get temperatures =>
+      _history.map((e) => e.temperature).whereType<double>().toList();
 
-  List<double> get humidities => _history.map((e) => e.humidity).toList();
+  List<double> get humidities =>
+      _history.map((e) => e.humidity).whereType<double>().toList();
+
+  List<DateTime> get temperatureTimestamps => _history
+      .where((e) => e.temperature != null)
+      .map((e) => e.timestamp)
+      .toList();
+
+  List<DateTime> get humidityTimestamps => _history
+      .where((e) => e.humidity != null)
+      .map((e) => e.timestamp)
+      .toList();
 
   List<int> get accelerationX => _history.map((e) => e.acceleration.x).toList();
   List<int> get accelerationY => _history.map((e) => e.acceleration.y).toList();
@@ -45,41 +57,39 @@ class SensorHistoryService {
   }
 
   double? get minTemperature {
-    if (_history.isEmpty) return null;
-
-    return temperatures.reduce((a, b) => a < b ? a : b);
+    final values = temperatures;
+    if (values.isEmpty) return null;
+    return values.reduce((a, b) => a < b ? a : b);
   }
 
   double? get maxTemperature {
-    if (_history.isEmpty) return null;
-
-    return temperatures.reduce((a, b) => a > b ? a : b);
+    final values = temperatures;
+    if (values.isEmpty) return null;
+    return values.reduce((a, b) => a > b ? a : b);
   }
 
   double? get averageTemperature {
-    if (_history.isEmpty) return null;
-
     final values = temperatures;
+    if (values.isEmpty) return null;
 
     return values.reduce((a, b) => a + b) / values.length;
   }
 
   double? get minHumidity {
-    if (_history.isEmpty) return null;
-
-    return humidities.reduce((a, b) => a < b ? a : b);
+    final values = humidities;
+    if (values.isEmpty) return null;
+    return values.reduce((a, b) => a < b ? a : b);
   }
 
   double? get maxHumidity {
-    if (_history.isEmpty) return null;
-
-    return humidities.reduce((a, b) => a > b ? a : b);
+    final values = humidities;
+    if (values.isEmpty) return null;
+    return values.reduce((a, b) => a > b ? a : b);
   }
 
   double? get averageHumidity {
-    if (_history.isEmpty) return null;
-
     final values = humidities;
+    if (values.isEmpty) return null;
 
     return values.reduce((a, b) => a + b) / values.length;
   }

@@ -15,6 +15,10 @@ class AnomalyScreen extends StatefulWidget {
 
 class _AnomalyScreenState extends State<AnomalyScreen> {
   AiAnomalyResponse? _aiAnomalyResponse;
+
+  bool _isAiLoading = true;
+  bool _hasAiError = false;
+
   AppLocalizations get l10n => AppLocalizations.of(context)!;
 
   @override
@@ -31,9 +35,22 @@ class _AnomalyScreenState extends State<AnomalyScreen> {
 
       setState(() {
         _aiAnomalyResponse = data;
+        _hasAiError = false;
       });
     } catch (e) {
       debugPrint('AI anomali verileri alınamadı: $e');
+
+      if (!mounted) return;
+
+      setState(() {
+        _hasAiError = true;
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isAiLoading = false;
+        });
+      }
     }
   }
 
@@ -65,7 +82,11 @@ class _AnomalyScreenState extends State<AnomalyScreen> {
 
           const SizedBox(height: 16),
 
-          AiAnalysisCard(response: _aiAnomalyResponse),
+          AiAnalysisCard(
+            response: _aiAnomalyResponse,
+            isLoading: _isAiLoading,
+            hasError: _hasAiError,
+          ),
 
           const SizedBox(height: 16),
 

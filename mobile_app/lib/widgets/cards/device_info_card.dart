@@ -10,7 +10,7 @@ import 'package:sentinel/widgets/common/status_dot.dart';
 
 class DeviceInfoCard extends StatelessWidget {
   final String deviceId;
-  final DateTime lastUpdate;
+  final DateTime? lastUpdate;
   final DeviceConnectionStatus connectionStatus;
 
   const DeviceInfoCard({
@@ -25,7 +25,7 @@ class DeviceInfoCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     final statusLabel = switch (connectionStatus) {
-      DeviceConnectionStatus.checking => l10n.connectionChecking,
+      DeviceConnectionStatus.checking => l10n.serverConnecting,
       DeviceConnectionStatus.online => l10n.connected,
       DeviceConnectionStatus.stale => l10n.deviceStale,
       DeviceConnectionStatus.serverUnavailable => l10n.serverUnavailable,
@@ -68,7 +68,20 @@ class DeviceInfoCard extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            StatusDot(status: statusColor, label: statusLabel),
+            if (connectionStatus == DeviceConnectionStatus.checking)
+              Row(
+                children: [
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text(statusLabel)),
+                ],
+              )
+            else
+              StatusDot(status: statusColor, label: statusLabel),
 
             const SizedBox(height: 16),
 
@@ -80,7 +93,9 @@ class DeviceInfoCard extends StatelessWidget {
             const SizedBox(height: 4),
 
             Text(
-              DateFormat('dd.MM.yyyy HH:mm').format(lastUpdate),
+              lastUpdate == null
+                  ? '--'
+                  : DateFormat('dd.MM.yyyy HH:mm').format(lastUpdate!),
               style: const TextStyle(fontSize: 13),
             ),
           ],
