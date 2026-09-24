@@ -421,6 +421,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unable to load AI analysis. Please try again later.'**
   String get aiAnalysisFailed;
+
+  /// No description provided for @adminOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get adminOverview;
+
+  /// No description provided for @adminDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Devices'**
+  String get adminDevices;
 }
 
 class _AppLocalizationsDelegate

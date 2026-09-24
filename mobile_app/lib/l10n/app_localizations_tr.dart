@@ -177,4 +177,10 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get aiAnalysisFailed =>
       'Yapay zeka analizi alınamadı. Daha sonra tekrar deneyin.';
+
+  @override
+  String get adminOverview => 'Genel Bakış';
+
+  @override
+  String get adminDevices => 'Cihazlar';
 }

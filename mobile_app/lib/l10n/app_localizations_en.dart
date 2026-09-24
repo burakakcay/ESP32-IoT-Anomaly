@@ -177,4 +177,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aiAnalysisFailed =>
       'Unable to load AI analysis. Please try again later.';
+
+  @override
+  String get adminOverview => 'Overview';
+
+  @override
+  String get adminDevices => 'Devices';
 }

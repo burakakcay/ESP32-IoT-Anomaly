@@ -74,5 +74,7 @@
 	"hidePassword": "Hide password",
 	"signOutFailed": "Unable to sign out. Please try again.",
 	"serverConnecting": "Connecting to server…",
-	"aiAnalysisFailed": "Unable to load AI analysis. Please try again later."
+	"aiAnalysisFailed": "Unable to load AI analysis. Please try again later.",
+	"adminOverview": "Overview",
+	"adminDevices": "Devices"
 }

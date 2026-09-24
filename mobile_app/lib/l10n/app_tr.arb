@@ -74,5 +74,7 @@
 	"hidePassword": "Parolayı gizle",
 	"signOutFailed": "Çıkış yapılamadı. Lütfen tekrar deneyin.",
 	"serverConnecting": "Sunucuya bağlanılıyor…",
-	"aiAnalysisFailed": "Yapay zeka analizi alınamadı. Daha sonra tekrar deneyin."
+	"aiAnalysisFailed": "Yapay zeka analizi alınamadı. Daha sonra tekrar deneyin.",
+	"adminOverview": "Genel Bakış",
+	"adminDevices": "Cihazlar"
 }
