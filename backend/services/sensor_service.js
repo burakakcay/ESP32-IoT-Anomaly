@@ -1,6 +1,6 @@
 const { buildAnomalyResponse } = require("./anomaly_service");
 
-function createSensorService({ getReadings, config }) {
+function createSensorService({ getReadings, config, saveAnomalies }) {
   const {
     defaultDeviceId,
     readingLimit,
@@ -23,11 +23,15 @@ function createSensorService({ getReadings, config }) {
 
     const readings = await getReadings(readingLimit);
 
-    anomalyCache = buildAnomalyResponse(
+    const analysis = buildAnomalyResponse(
       readings,
       defaultDeviceId,
       minBaselineSize,
     );
+
+    await saveAnomalies(analysis.results);
+
+    anomalyCache = analysis;
     anomalyCacheTime = Date.now();
 
     return anomalyCache;
@@ -42,6 +46,8 @@ function createSensorService({ getReadings, config }) {
       defaultDeviceId,
       minBaselineSize,
     );
+
+    await saveAnomalies(anomalies.results);
 
     anomalyCache = anomalies;
     anomalyCacheTime = Date.now();

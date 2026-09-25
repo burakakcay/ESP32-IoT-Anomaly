@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>Sentinel</title>
+  <g fill="none" stroke="#FF9800" stroke-width="48" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M512 112 C500 112 488 122 470 135 C390 193 300 225 205 251 C180 258 168 277 168 305 L168 439 C168 653 285 807 490 906 Q512 918 534 906 C739 807 856 653 856 439 L856 305 C856 277 844 258 819 251 C724 225 634 193 554 135 C536 122 524 112 512 112 Z"/>
+    <path d="M328 420 Q512 256 696 420"/>
+    <path d="M388 508 Q512 400 636 508"/>
+  </g>
+  <circle cx="512" cy="640" r="64" fill="#FF9800"/>
+</svg>

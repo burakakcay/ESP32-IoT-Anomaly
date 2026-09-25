@@ -157,10 +157,12 @@ class _AdminShellState extends State<AdminShell> {
                             onDestinationSelected: widget.onDestinationSelected,
                             leading: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 24),
-                              child: Icon(
-                                Icons.sensors_rounded,
-                                color: colors.primary,
-                                size: 36,
+                              child: Image.asset(
+                                'assets/icons/sentinel_monochrome_clean.png',
+                                width: 44,
+                                height: 44,
+                                fit: BoxFit.contain,
+                                semanticLabel: 'Sentinel',
                               ),
                             ),
                             destinations: [

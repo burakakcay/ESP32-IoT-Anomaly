@@ -29,6 +29,9 @@ const { createReadingsRouter } = require("./routes/readings.routes");
 const { createDashboardRouter } = require("./routes/dashboard.routes");
 const { createAnomaliesRouter } = require("./routes/anomalies.routes");
 const { requireAuth } = require("./middleware/auth.middleware");
+const {
+  saveAnomalies: persistAnomalies,
+} = require("./repositories/anomalies.repository");
 
 initializeApp({ credential: cert(serviceAccount) });
 
@@ -56,6 +59,7 @@ async function getLatestReading() {
 const { getAnomalyResponse, getDashboardResponse } = createSensorService({
   getReadings,
   config,
+  saveAnomalies: (results) => persistAnomalies(db, DEVICE_ID, results),
 });
 
 const { getAIResponse } = createAIResponseService({
