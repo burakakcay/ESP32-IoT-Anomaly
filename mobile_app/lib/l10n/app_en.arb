@@ -76,5 +76,18 @@
 	"serverConnecting": "Connecting to server…",
 	"aiAnalysisFailed": "Unable to load AI analysis. Please try again later.",
 	"adminOverview": "Overview",
-	"adminDevices": "Devices"
+	"adminDevices": "Devices",
+	"demoLabel": "Demo",
+	"demoDeviceNotice": "This screen displays sample readings. No live device is connected.","realDevices": "Real devices",
+	"recentDeviceData": "Recent readings",
+	"demoDevices": "Demo devices",
+	"demoExcludedFromSummary": "Demo devices are excluded from the status counts above.",
+	"latestAnalysisResults": "Latest analysis results",
+	"refreshData": "Refresh",
+	"anomalyLoadFailed": "Unable to load analysis results. Use Refresh to try again.",
+	"latestAnalysisNotice": "Only anomalies in the latest batch of readings are shown. This is not a permanent anomaly history.",
+	"measurementValue": "Reading",
+	"baselineMedian": "Baseline median",
+	"analyzeWithAi": "Analyze with AI",
+	"aiResultsScope": "The list shows up to the last 10 anomalies used for the AI interpretation. Cached results may be used."
 }

@@ -433,6 +433,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Devices'**
   String get adminDevices;
+
+  /// No description provided for @demoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo'**
+  String get demoLabel;
+
+  /// No description provided for @demoDeviceNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'This screen displays sample readings. No live device is connected.'**
+  String get demoDeviceNotice;
+
+  /// No description provided for @realDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Real devices'**
+  String get realDevices;
+
+  /// No description provided for @recentDeviceData.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent readings'**
+  String get recentDeviceData;
+
+  /// No description provided for @demoDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo devices'**
+  String get demoDevices;
+
+  /// No description provided for @demoExcludedFromSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Demo devices are excluded from the status counts above.'**
+  String get demoExcludedFromSummary;
+
+  /// No description provided for @latestAnalysisResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest analysis results'**
+  String get latestAnalysisResults;
+
+  /// No description provided for @refreshData.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get refreshData;
+
+  /// No description provided for @anomalyLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load analysis results. Use Refresh to try again.'**
+  String get anomalyLoadFailed;
+
+  /// No description provided for @latestAnalysisNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Only anomalies in the latest batch of readings are shown. This is not a permanent anomaly history.'**
+  String get latestAnalysisNotice;
+
+  /// No description provided for @measurementValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading'**
+  String get measurementValue;
+
+  /// No description provided for @baselineMedian.
+  ///
+  /// In en, this message translates to:
+  /// **'Baseline median'**
+  String get baselineMedian;
+
+  /// No description provided for @analyzeWithAi.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze with AI'**
+  String get analyzeWithAi;
+
+  /// No description provided for @aiResultsScope.
+  ///
+  /// In en, this message translates to:
+  /// **'The list shows up to the last 10 anomalies used for the AI interpretation. Cached results may be used.'**
+  String get aiResultsScope;
 }
 
 class _AppLocalizationsDelegate

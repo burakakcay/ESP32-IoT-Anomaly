@@ -183,4 +183,51 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminDevices => 'Devices';
+
+  @override
+  String get demoLabel => 'Demo';
+
+  @override
+  String get demoDeviceNotice =>
+      'This screen displays sample readings. No live device is connected.';
+
+  @override
+  String get realDevices => 'Real devices';
+
+  @override
+  String get recentDeviceData => 'Recent readings';
+
+  @override
+  String get demoDevices => 'Demo devices';
+
+  @override
+  String get demoExcludedFromSummary =>
+      'Demo devices are excluded from the status counts above.';
+
+  @override
+  String get latestAnalysisResults => 'Latest analysis results';
+
+  @override
+  String get refreshData => 'Refresh';
+
+  @override
+  String get anomalyLoadFailed =>
+      'Unable to load analysis results. Use Refresh to try again.';
+
+  @override
+  String get latestAnalysisNotice =>
+      'Only anomalies in the latest batch of readings are shown. This is not a permanent anomaly history.';
+
+  @override
+  String get measurementValue => 'Reading';
+
+  @override
+  String get baselineMedian => 'Baseline median';
+
+  @override
+  String get analyzeWithAi => 'Analyze with AI';
+
+  @override
+  String get aiResultsScope =>
+      'The list shows up to the last 10 anomalies used for the AI interpretation. Cached results may be used.';
 }

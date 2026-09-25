@@ -183,4 +183,51 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get adminDevices => 'Cihazlar';
+
+  @override
+  String get demoLabel => 'Demo';
+
+  @override
+  String get demoDeviceNotice =>
+      'Bu ekran örnek ölçümleri gösterir. Canlı cihaz bağlantısı yoktur.';
+
+  @override
+  String get realDevices => 'Gerçek cihazlar';
+
+  @override
+  String get recentDeviceData => 'Verisi güncel';
+
+  @override
+  String get demoDevices => 'Demo cihazlar';
+
+  @override
+  String get demoExcludedFromSummary =>
+      'Demo cihazlar yukarıdaki durum sayılarına dahil edilmez.';
+
+  @override
+  String get latestAnalysisResults => 'Son analiz sonuçları';
+
+  @override
+  String get refreshData => 'Yenile';
+
+  @override
+  String get anomalyLoadFailed =>
+      'Analiz sonuçları alınamadı. Yenile düğmesiyle tekrar deneyebilirsiniz.';
+
+  @override
+  String get latestAnalysisNotice =>
+      'Yalnızca son ölçüm grubundaki anomaliler gösterilir. Bu liste kalıcı anomali geçmişi değildir.';
+
+  @override
+  String get measurementValue => 'Ölçüm';
+
+  @override
+  String get baselineMedian => 'Referans medyan';
+
+  @override
+  String get analyzeWithAi => 'AI ile yorumla';
+
+  @override
+  String get aiResultsScope =>
+      'Liste, AI yorumuna kaynak olan en fazla son 10 anomaliyi gösterir. Önbellekteki sonuç kullanılabilir.';
 }

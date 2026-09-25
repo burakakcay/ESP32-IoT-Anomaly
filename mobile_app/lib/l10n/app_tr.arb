@@ -76,5 +76,19 @@
 	"serverConnecting": "Sunucuya bağlanılıyor…",
 	"aiAnalysisFailed": "Yapay zeka analizi alınamadı. Daha sonra tekrar deneyin.",
 	"adminOverview": "Genel Bakış",
-	"adminDevices": "Cihazlar"
+	"adminDevices": "Cihazlar", 
+	"demoLabel": "Demo",
+	"demoDeviceNotice": "Bu ekran örnek ölçümleri gösterir. Canlı cihaz bağlantısı yoktur.",
+	"realDevices": "Gerçek cihazlar",
+	"recentDeviceData": "Verisi güncel",
+	"demoDevices": "Demo cihazlar",
+	"demoExcludedFromSummary": "Demo cihazlar yukarıdaki durum sayılarına dahil edilmez.",
+	"latestAnalysisResults": "Son analiz sonuçları",
+	"refreshData": "Yenile",
+	"anomalyLoadFailed": "Analiz sonuçları alınamadı. Yenile düğmesiyle tekrar deneyebilirsiniz.",
+	"latestAnalysisNotice": "Yalnızca son ölçüm grubundaki anomaliler gösterilir. Bu liste kalıcı anomali geçmişi değildir.",
+	"measurementValue": "Ölçüm",
+	"baselineMedian": "Referans medyan",
+	"analyzeWithAi": "AI ile yorumla",
+	"aiResultsScope": "Liste, AI yorumuna kaynak olan en fazla son 10 anomaliyi gösterir. Önbellekteki sonuç kullanılabilir."
 }

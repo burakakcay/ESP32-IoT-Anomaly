@@ -21,7 +21,10 @@ import 'package:sentinel/widgets/cards/sensor_card.dart';
 import 'package:sentinel/core/enums/device_connection_status.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+  final ValueChanged<SensorData>? onReadingUpdated;
+  final String? title;
+
+  const DashboardScreen({super.key, this.onReadingUpdated, this.title});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -127,6 +130,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             : DeviceConnectionStatus.stale;
         _anomalyResponse = data.anomalies;
       });
+
+      widget.onReadingUpdated?.call(latestReading);
     } catch (e, stackTrace) {
       debugPrint("Dashboard verileri alınamadı: $e");
       debugPrintStack(stackTrace: stackTrace);
@@ -161,6 +166,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
       });
 
       _historyService.add(data);
+
+      widget.onReadingUpdated?.call(data);
     } catch (e) {
       debugPrint("Sensör verisi okunamadı: $e");
 
@@ -215,7 +222,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.appName),
+        title: Text(widget.title ?? l10n.appName),
         actions: [
           IconButton(
             tooltip: l10n.signOutButton,
@@ -231,83 +238,106 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            DeviceInfoCard(
-              deviceId: _sensorData?.deviceId ?? "ESP32_Node_001",
-              lastUpdate: _sensorData?.timestamp,
-              connectionStatus: _connectionStatus,
-            ),
-
-            const SizedBox(height: 16),
-
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 16,
-              childAspectRatio: 0.95,
+      body: Align(
+        alignment: Alignment.topCenter,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: 1200),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
               children: [
-                SensorCard(
-                  title: l10n.temperature,
-                  value: _sensorData?.temperature?.toStringAsFixed(1) ?? "--",
-                  unit: "°C",
-                  icon: Icons.thermostat,
-                  status: _sensorData?.temperature == null
-                      ? SensorStatus.normal
-                      : SensorStatusHelper.getTemperatureStatus(
-                          _sensorData!.temperature!,
+                DeviceInfoCard(
+                  deviceId: _sensorData?.deviceId ?? "ESP32_Node_001",
+                  lastUpdate: _sensorData?.timestamp,
+                  connectionStatus: _connectionStatus,
+                ),
+
+                const SizedBox(height: 16),
+
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isWide = constraints.maxWidth >= 900;
+                    final columnCount = isWide ? 4 : 2;
+                    final cardWidth =
+                        (constraints.maxWidth - (columnCount - 1) * 16) /
+                        columnCount;
+                    final cardHeight = 210.0;
+
+                    return GridView.count(
+                      crossAxisCount: columnCount,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: cardWidth / cardHeight,
+                      children: [
+                        SensorCard(
+                          title: l10n.temperature,
+                          value:
+                              _sensorData?.temperature?.toStringAsFixed(1) ??
+                              "--",
+                          unit: "°C",
+                          icon: Icons.thermostat,
+                          status: _sensorData?.temperature == null
+                              ? SensorStatus.normal
+                              : SensorStatusHelper.getTemperatureStatus(
+                                  _sensorData!.temperature!,
+                                ),
+                          onTap: () =>
+                              _openSensorDetail(SensorType.temperature),
                         ),
-                  onTap: () => _openSensorDetail(SensorType.temperature),
-                ),
 
-                SensorCard(
-                  title: l10n.humidity,
-                  value: _sensorData?.humidity?.toStringAsFixed(1) ?? "--",
-                  unit: "%",
-                  icon: Icons.water_drop,
-                  status: _sensorData?.humidity == null
-                      ? SensorStatus.normal
-                      : SensorStatusHelper.getHumidityStatus(
-                          _sensorData!.humidity!,
+                        SensorCard(
+                          title: l10n.humidity,
+                          value:
+                              _sensorData?.humidity?.toStringAsFixed(1) ?? "--",
+                          unit: "%",
+                          icon: Icons.water_drop,
+                          status: _sensorData?.humidity == null
+                              ? SensorStatus.normal
+                              : SensorStatusHelper.getHumidityStatus(
+                                  _sensorData!.humidity!,
+                                ),
+                          onTap: () => _openSensorDetail(SensorType.humidity),
                         ),
-                  onTap: () => _openSensorDetail(SensorType.humidity),
+
+                        AccelerationCard(
+                          acceleration: _sensorData?.acceleration,
+                          onTap: () =>
+                              _openSensorDetail(SensorType.acceleration),
+                        ),
+
+                        GyroscopeCard(
+                          gyroscope: _sensorData?.gyroscope,
+                          onTap: () => _openSensorDetail(SensorType.gyroscope),
+                        ),
+                      ],
+                    );
+                  },
                 ),
 
-                AccelerationCard(
-                  acceleration: _sensorData?.acceleration,
-                  onTap: () => _openSensorDetail(SensorType.acceleration),
-                ),
+                const SizedBox(height: 16),
 
-                GyroscopeCard(
-                  gyroscope: _sensorData?.gyroscope,
-                  onTap: () => _openSensorDetail(SensorType.gyroscope),
+                AnomalyCard(
+                  anomalyResponse: _anomalyResponse,
+                  latestAnomaly: _latestAnomaly,
+                  latestAnomalyTime: _latestAnomalyTime,
+                  onTap: _anomalyResponse == null
+                      ? null
+                      : () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => AnomalyScreen(
+                                anomalyResponse: _anomalyResponse!,
+                              ),
+                            ),
+                          );
+                        },
                 ),
               ],
             ),
-
-            const SizedBox(height: 16),
-
-            AnomalyCard(
-              anomalyResponse: _anomalyResponse,
-              latestAnomaly: _latestAnomaly,
-              latestAnomalyTime: _latestAnomalyTime,
-              onTap: _anomalyResponse == null
-                  ? null
-                  : () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              AnomalyScreen(anomalyResponse: _anomalyResponse!),
-                        ),
-                      );
-                    },
-            ),
-          ],
+          ),
         ),
       ),
     );

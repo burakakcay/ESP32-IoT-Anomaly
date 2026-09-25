@@ -6,7 +6,11 @@ function createApp() {
 
   app.use(
     cors({
-      origin: "http://localhost:5000",
+      origin: [
+        "http://localhost:5000",
+        "https://esp32-iot-anomali.web.app",
+        "https://esp32-iot-anomali.firebaseapp.com",
+      ],
       methods: ["GET"],
       allowedHeaders: ["Authorization", "Content-Type"],
     }),

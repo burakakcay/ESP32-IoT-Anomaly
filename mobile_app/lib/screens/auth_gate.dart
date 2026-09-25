@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sentinel/screens/dashboard_screen.dart';
 import 'package:sentinel/screens/login_screen.dart';
 import 'package:sentinel/services/auth_service.dart';
+import 'package:sentinel/screens/admin/admin_screen.dart';
 
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
@@ -35,7 +37,7 @@ class _AuthGateState extends State<AuthGate> {
           return const LoginScreen();
         }
 
-        return const DashboardScreen();
+        return kIsWeb ? const AdminScreen() : const DashboardScreen();
       },
     );
   }
