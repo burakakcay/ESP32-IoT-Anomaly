@@ -1,6 +1,10 @@
 const express = require("express");
 
-function createAnomaliesRouter({ getAnomalyResponse, getAIResponse }) {
+function createAnomaliesRouter({
+  getAnomalyResponse,
+  getAIResponse,
+  getAnomalyHistory,
+}) {
   const router = express.Router();
 
   router.get("/", async (req, res) => {
@@ -24,6 +28,18 @@ function createAnomaliesRouter({ getAnomalyResponse, getAIResponse }) {
       res
         .status(error.statusCode || 500)
         .json({ error: error.message || "AI anomali analizi yapılamadı." });
+    }
+  });
+
+  router.get("/history", async (req, res) => {
+    try {
+      res.json(await getAnomalyHistory());
+    } catch (error) {
+      console.error("Anomali geçmişi alınamadı:", error);
+
+      res.status(500).json({
+        error: "Anomali geçmişi alınamadı.",
+      });
     }
   });
 

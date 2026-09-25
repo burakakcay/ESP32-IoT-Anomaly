@@ -31,6 +31,7 @@ const { createAnomaliesRouter } = require("./routes/anomalies.routes");
 const { requireAuth } = require("./middleware/auth.middleware");
 const {
   saveAnomalies: persistAnomalies,
+  getAnomalyHistory: fetchAnomalyHistory,
 } = require("./repositories/anomalies.repository");
 
 initializeApp({ credential: cert(serviceAccount) });
@@ -56,6 +57,16 @@ async function getLatestReading() {
   return fetchLatestReadings(db, DEVICE_ID);
 }
 
+async function getAnomalyHistory() {
+  const results = await fetchAnomalyHistory(db, DEVICE_ID);
+
+  return {
+    device_id: DEVICE_ID,
+    returnedCount: results.length,
+    results,
+  };
+}
+
 const { getAnomalyResponse, getDashboardResponse } = createSensorService({
   getReadings,
   config,
@@ -78,7 +89,11 @@ app.use("/api/dashboard", createDashboardRouter({ getDashboardResponse }));
 
 app.use(
   "/api/anomalies",
-  createAnomaliesRouter({ getAnomalyResponse, getAIResponse }),
+  createAnomaliesRouter({
+    getAnomalyResponse,
+    getAIResponse,
+    getAnomalyHistory,
+  }),
 );
 
 app.listen(PORT, () => {
