@@ -230,4 +230,25 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aiResultsScope =>
       'The list shows up to the last 10 anomalies used for the AI interpretation. Cached results may be used.';
+
+  @override
+  String get latestAnalysisTab => 'Latest analysis';
+
+  @override
+  String get savedHistoryTab => 'Saved history';
+
+  @override
+  String get anomalyHistoryNotice =>
+      'The 100 most recent saved anomalies are shown. Records are created when analysis runs.';
+
+  @override
+  String get anomalyHistoryEmpty => 'No saved anomalies yet.';
+
+  @override
+  String get anomalyHistoryLoadFailed => 'Could not load anomaly history.';
+
+  @override
+  String anomalyHistoryCount(int count) {
+    return 'Showing $count records.';
+  }
 }

@@ -91,4 +91,19 @@ class ApiService {
 
     throw Exception('Ai anomali verileri alınamadı: ${response.statusCode}');
   }
+
+  static Future<AnomalyHistoryResponse> getAnomalyHistory() async {
+    final response = await _get(
+      '/api/anomalies/history',
+      timeout: const Duration(seconds: 60),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Anomali geçmişi alınamadı: ${response.statusCode}');
+    }
+
+    final jsonData = jsonDecode(response.body) as Map<String, dynamic>;
+
+    return AnomalyHistoryResponse.fromJson(jsonData);
+  }
 }

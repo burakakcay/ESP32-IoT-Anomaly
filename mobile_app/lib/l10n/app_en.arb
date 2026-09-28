@@ -89,5 +89,18 @@
 	"measurementValue": "Reading",
 	"baselineMedian": "Baseline median",
 	"analyzeWithAi": "Analyze with AI",
-	"aiResultsScope": "The list shows up to the last 10 anomalies used for the AI interpretation. Cached results may be used."
+	"aiResultsScope": "The list shows up to the last 10 anomalies used for the AI interpretation. Cached results may be used.",
+	"latestAnalysisTab": "Latest analysis",
+	"savedHistoryTab": "Saved history",
+	"anomalyHistoryNotice": "The 100 most recent saved anomalies are shown. Records are created when analysis runs.",
+	"anomalyHistoryEmpty": "No saved anomalies yet.",
+	"anomalyHistoryLoadFailed": "Could not load anomaly history.",
+	"anomalyHistoryCount": "Showing {count} records.",
+	"@anomalyHistoryCount": {
+		"placeholders": {
+			"count": {
+			"type": "int"
+			}
+		}
+	}
 }

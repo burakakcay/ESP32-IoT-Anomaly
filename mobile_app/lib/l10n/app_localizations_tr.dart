@@ -230,4 +230,25 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get aiResultsScope =>
       'Liste, AI yorumuna kaynak olan en fazla son 10 anomaliyi gösterir. Önbellekteki sonuç kullanılabilir.';
+
+  @override
+  String get latestAnalysisTab => 'Son analiz';
+
+  @override
+  String get savedHistoryTab => 'Kalıcı geçmiş';
+
+  @override
+  String get anomalyHistoryNotice =>
+      'Kaydedilmiş en yeni 100 anomali gösterilir. Kayıtlar, analiz çalıştırıldığında oluşur.';
+
+  @override
+  String get anomalyHistoryEmpty => 'Henüz kaydedilmiş anomali yok.';
+
+  @override
+  String get anomalyHistoryLoadFailed => 'Anomali geçmişi alınamadı.';
+
+  @override
+  String anomalyHistoryCount(int count) {
+    return '$count kayıt gösteriliyor.';
+  }
 }

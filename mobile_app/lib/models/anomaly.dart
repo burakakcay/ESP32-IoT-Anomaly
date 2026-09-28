@@ -128,3 +128,25 @@ class AiAnomalyResponse {
     );
   }
 }
+
+class AnomalyHistoryResponse {
+  final String deviceId;
+  final int returnedCount;
+  final List<AnomalyResult> results;
+
+  AnomalyHistoryResponse({
+    required this.deviceId,
+    required this.returnedCount,
+    required this.results,
+  });
+
+  factory AnomalyHistoryResponse.fromJson(Map<String, dynamic> json) {
+    return AnomalyHistoryResponse(
+      deviceId: json['device_id'] as String,
+      returnedCount: json['returnedCount'] as int,
+      results: (json['results'] as List)
+          .map((item) => AnomalyResult.fromJson(item as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:sentinel/data/demo_devices.dart';
 import 'package:sentinel/models/device_summary.dart';
 import 'package:sentinel/models/sensor_data.dart';
-import 'package:sentinel/screens/admin/admin_anomalies_screen.dart';
+import 'package:sentinel/screens/admin/admin_anomalies_tabs.dart';
 import 'package:sentinel/screens/admin/admin_overview_screen.dart';
 import 'package:sentinel/screens/admin/admin_shell.dart';
 import 'package:sentinel/screens/admin/demo_devices_screen.dart';
@@ -116,7 +116,7 @@ class _AdminScreenState extends State<AdminScreen> {
           AdminOverviewScreen(devices: devices),
           DevicesScreen(devices: devices, onDeviceSelected: _openDevice),
           if (_selectedIndex == 2)
-            const AdminAnomaliesScreen()
+            const AdminAnomaliesTabs()
           else
             const SizedBox.shrink(),
         ],

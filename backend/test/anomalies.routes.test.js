@@ -5,6 +5,9 @@ const request = require("supertest");
 
 const { createApp } = require("../app");
 const { createAnomaliesRouter } = require("../routes/anomalies.routes");
+const { timeStamp } = require("node:console");
+const { getAnomalyHistory } = require("../repositories/anomalies.repository");
+const { deepEqual } = require("node:assert");
 
 function createTestApp(overrides = {}) {
   const app = createApp();
@@ -128,5 +131,61 @@ test("GET /api/anomalies/ai beklenmeyen hatada 500 döndürür", async () => {
 
   assert.deepEqual(response.body, {
     error: "Test AI servis hatası",
+  });
+});
+
+test("GET /api/anomalies/history kayıtlı geçmişi döndürür", async () => {
+  const history = {
+    device_id: "test-device",
+    returnedCount: 1,
+    results: [
+      {
+        id: "reading-1",
+        timestamp: "2026-09-24T15:46:52",
+      },
+    ],
+  };
+
+  const app = createTestApp({
+    getAnomalyHistory: async () => history,
+  });
+
+  const response = await request(app)
+    .get("/api/anomalies/history")
+    .expect("Content-Type", /json/)
+    .expect(200);
+
+  assert.deepEqual(response.body, history);
+});
+
+test("GET /api/anomalies/history boş geçmişte 200 döndürür", async () => {
+  const history = {
+    device_id: "test-device",
+    returnedCount: 0,
+    results: [],
+  };
+
+  const app = createTestApp({
+    getAnomalyHistory: async () => history,
+  });
+
+  const response = await request(app).get("/api/anomalies/history").expect(200);
+
+  assert.deepEqual(response.body, history);
+});
+
+test("GET /api/anomalies/history servis hatasında 500 döndürür", async (t) => {
+  t.mock.method(console, "error", () => {});
+
+  const app = createTestApp({
+    getAnomalyHistory: async () => {
+      throw new Error("Dahili veritabanı hatası");
+    },
+  });
+
+  const response = await request(app).get("/api/anomalies/history").expect(500);
+
+  assert.deepEqual(response.body, {
+    error: "Anomali geçmişi alınamadı.",
   });
 });

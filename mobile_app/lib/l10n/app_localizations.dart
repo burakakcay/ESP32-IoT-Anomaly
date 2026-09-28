@@ -517,6 +517,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The list shows up to the last 10 anomalies used for the AI interpretation. Cached results may be used.'**
   String get aiResultsScope;
+
+  /// No description provided for @latestAnalysisTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest analysis'**
+  String get latestAnalysisTab;
+
+  /// No description provided for @savedHistoryTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved history'**
+  String get savedHistoryTab;
+
+  /// No description provided for @anomalyHistoryNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'The 100 most recent saved anomalies are shown. Records are created when analysis runs.'**
+  String get anomalyHistoryNotice;
+
+  /// No description provided for @anomalyHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved anomalies yet.'**
+  String get anomalyHistoryEmpty;
+
+  /// No description provided for @anomalyHistoryLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load anomaly history.'**
+  String get anomalyHistoryLoadFailed;
+
+  /// No description provided for @anomalyHistoryCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing {count} records.'**
+  String anomalyHistoryCount(int count);
 }
 
 class _AppLocalizationsDelegate
