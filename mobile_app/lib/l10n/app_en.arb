@@ -102,5 +102,7 @@
 			"type": "int"
 			}
 		}
-	}
+	},
+	"signOutConfirmation": "Do you want to sign out?",
+	"cancelButton": "Cancel"
 }

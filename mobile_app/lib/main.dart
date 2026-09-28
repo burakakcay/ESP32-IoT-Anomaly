@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:sentinel/firebase_options.dart';
+import '../firebase_options.dart';
 import 'package:sentinel/screens/auth_gate.dart';
 import 'l10n/app_localizations.dart';
 import 'package:sentinel/core/theme/app_theme.dart';

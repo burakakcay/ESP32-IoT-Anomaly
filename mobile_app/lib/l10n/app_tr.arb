@@ -92,7 +92,7 @@
 	"analyzeWithAi": "AI ile yorumla",
 	"aiResultsScope": "Liste, AI yorumuna kaynak olan en fazla son 10 anomaliyi gösterir. Önbellekteki sonuç kullanılabilir.",
 	"latestAnalysisTab": "Son analiz",
-	"savedHistoryTab": "Kalıcı geçmiş",
+	"savedHistoryTab": "Geçmiş",
 	"anomalyHistoryNotice": "Kaydedilmiş en yeni 100 anomali gösterilir. Kayıtlar, analiz çalıştırıldığında oluşur.",
 	"anomalyHistoryEmpty": "Henüz kaydedilmiş anomali yok.",
 	"anomalyHistoryLoadFailed": "Anomali geçmişi alınamadı.",
@@ -103,5 +103,7 @@
 			"type": "int"
 			}
 		}
-	}
+	},
+	"signOutConfirmation": "Oturumu kapatmak istiyor musunuz?",
+	"cancelButton": "Vazgeç"
 }

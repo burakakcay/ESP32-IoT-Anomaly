@@ -19,6 +19,7 @@ import 'package:sentinel/widgets/cards/device_info_card.dart';
 import 'package:sentinel/widgets/cards/gyroscope_card.dart';
 import 'package:sentinel/widgets/cards/sensor_card.dart';
 import 'package:sentinel/core/enums/device_connection_status.dart';
+import 'package:sentinel/widgets/dialogs/sign_out_dialog.dart';
 
 class DashboardScreen extends StatefulWidget {
   final ValueChanged<SensorData>? onReadingUpdated;
@@ -41,6 +42,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     setState(() => _isSigningOut = true);
 
     try {
+      final confirmed = await showSignOutDialog(context);
+
+      if (!mounted || !confirmed) return;
+
       await AuthService.signOut();
     } catch (_) {
       if (!mounted) return;

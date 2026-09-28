@@ -251,4 +251,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String anomalyHistoryCount(int count) {
     return 'Showing $count records.';
   }
+
+  @override
+  String get signOutConfirmation => 'Do you want to sign out?';
+
+  @override
+  String get cancelButton => 'Cancel';
 }

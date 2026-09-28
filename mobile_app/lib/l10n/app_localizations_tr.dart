@@ -235,7 +235,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get latestAnalysisTab => 'Son analiz';
 
   @override
-  String get savedHistoryTab => 'Kalıcı geçmiş';
+  String get savedHistoryTab => 'Geçmiş';
 
   @override
   String get anomalyHistoryNotice =>
@@ -251,4 +251,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String anomalyHistoryCount(int count) {
     return '$count kayıt gösteriliyor.';
   }
+
+  @override
+  String get signOutConfirmation => 'Oturumu kapatmak istiyor musunuz?';
+
+  @override
+  String get cancelButton => 'Vazgeç';
 }

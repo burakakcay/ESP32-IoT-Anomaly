@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sentinel/l10n/app_localizations.dart';
 import 'package:sentinel/services/auth_service.dart';
+import 'package:sentinel/widgets/dialogs/sign_out_dialog.dart';
 
 class AdminShell extends StatefulWidget {
   final int selectedIndex;
@@ -27,6 +28,10 @@ class _AdminShellState extends State<AdminShell> {
     setState(() => _isSigningOut = true);
 
     try {
+      final confirmed = await showSignOutDialog(context);
+
+      if (!mounted || !confirmed) return;
+
       await AuthService.signOut();
     } catch (error) {
       debugPrint('Çıkış yapılamadı: $error');
