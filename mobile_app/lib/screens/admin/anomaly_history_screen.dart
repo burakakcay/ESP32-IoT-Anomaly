@@ -53,7 +53,7 @@ class _AnomalyHistoryScreenState extends State<AnomalyHistoryScreen> {
       final page = await ApiService.getAnomalyHistory(
         from: _dateRange?.start,
         to: _dateRange?.end,
-        limit: 2,
+        limit: 20,
         cursor: cursor,
       );
 
