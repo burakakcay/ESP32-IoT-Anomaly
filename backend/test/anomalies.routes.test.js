@@ -189,3 +189,111 @@ test("GET /api/anomalies/history servis hatasında 500 döndürür", async (t) =
     error: "Anomali geçmişi alınamadı.",
   });
 });
+
+test("Geçmiş filtresi parametreleri servise aktarır", async () => {
+  let receivedOptions;
+
+  const history = {
+    device_id: "test-device",
+    returnedCount: 0,
+    results: [],
+    nextCursor: null,
+  };
+
+  const app = createTestApp({
+    getAnomalyHistory: async (options) => {
+      receivedOptions = options;
+      return history;
+    },
+  });
+
+  const response = await request(app)
+    .get("/api/anomalies/history")
+    .query({
+      from: "2026-09-24",
+      to: "2026-09-28",
+      limit: "10",
+      cursor: "reading-123",
+    })
+    .expect(200);
+
+  assert.deepEqual(receivedOptions, {
+    fromTimestamp: "2026-09-24T00:00:00",
+    toTimestampExclusive: "2026-09-29T00:00:00",
+    limit: 10,
+    cursor: "reading-123",
+  });
+
+  assert.deepEqual(response.body, history);
+});
+
+test("Geçmiş sorgusu varsayılan olarak 20 kayıt ister", async () => {
+  let receivedOptions;
+
+  const app = createTestApp({
+    getAnomalyHistory: async (options) => {
+      receivedOptions = options;
+      return { results: [], nextCursor: null };
+    },
+  });
+
+  await request(app).get("/api/anomalies/history").expect(200);
+
+  assert.deepEqual(receivedOptions, {
+    fromTimestamp: undefined,
+    toTimestampExclusive: undefined,
+    limit: 20,
+    cursor: undefined,
+  });
+});
+
+test("Bitiş tarihi yıl sonunda sonraki yıla geçer", async () => {
+  let receivedOptions;
+
+  const app = createTestApp({
+    getAnomalyHistory: async (options) => {
+      receivedOptions = options;
+      return { results: [], nextCursor: null };
+    },
+  });
+
+  await request(app)
+    .get("/api/anomalies/history")
+    .query({ to: "2026-12-31" })
+    .expect(200);
+
+  assert.equal(receivedOptions.toTimestampExclusive, "2027-01-01T00:00:00");
+});
+
+const invalidHistoryQueries = [
+  ["gerçekte olmayan tarih", { from: "2026-02-30" }],
+  ["hatalı tarih biçimi", { from: "28.09.2026" }],
+  ["ters tarih aralığı", { from: "2026-09-28", to: "2026-09-24" }],
+  ["sıfır limit", { limit: "0" }],
+  ["100 üzerinde limit", { limit: "101" }],
+  ["ondalıklı limit", { limit: "2.5" }],
+  ["boş cursor", { cursor: "" }],
+  ["yol içeren cursor", { cursor: "readings/123" }],
+];
+
+for (const [description, query] of invalidHistoryQueries) {
+  test(`Geçmiş sorgusu ${description} için 400 döndürür`, async () => {
+    let serviceCalled = false;
+
+    const app = createTestApp({
+      getAnomalyHistory: async () => {
+        serviceCalled = true;
+        return { results: [] };
+      },
+    });
+
+    const response = await request(app)
+      .get("/api/anomalies/history")
+      .query(query)
+      .expect(400);
+
+    assert.equal(serviceCalled, false);
+    assert.equal(typeof response.body.error, "string");
+    assert.ok(response.body.error.length > 0);
+  });
+}

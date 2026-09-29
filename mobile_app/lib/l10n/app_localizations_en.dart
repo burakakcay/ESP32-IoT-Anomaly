@@ -239,7 +239,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get anomalyHistoryNotice =>
-      'The 100 most recent saved anomalies are shown. Records are created when analysis runs.';
+      'Records are loaded in pages, newest first. Only anomalies saved during completed analyses are shown.';
 
   @override
   String get anomalyHistoryEmpty => 'No saved anomalies yet.';
@@ -262,4 +262,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String sensorAxisLabel(String sensor, String axis) {
     return '$sensor · $axis axis';
   }
+
+  @override
+  String get historyDateRange => 'Date range';
+
+  @override
+  String get historyClearFilter => 'Clear filter';
+
+  @override
+  String get historyLoadMore => 'Load more';
+
+  @override
+  String get historyLoadMoreFailed =>
+      'Could not load more records. You can try again.';
 }

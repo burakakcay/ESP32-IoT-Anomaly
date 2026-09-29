@@ -133,11 +133,13 @@ class AnomalyHistoryResponse {
   final String deviceId;
   final int returnedCount;
   final List<AnomalyResult> results;
+  final String? nextCursor;
 
   AnomalyHistoryResponse({
     required this.deviceId,
     required this.returnedCount,
     required this.results,
+    this.nextCursor,
   });
 
   factory AnomalyHistoryResponse.fromJson(Map<String, dynamic> json) {
@@ -147,6 +149,7 @@ class AnomalyHistoryResponse {
       results: (json['results'] as List)
           .map((item) => AnomalyResult.fromJson(item as Map<String, dynamic>))
           .toList(),
+      nextCursor: json['nextCursor'] as String?,
     );
   }
 }

@@ -533,7 +533,7 @@ abstract class AppLocalizations {
   /// No description provided for @anomalyHistoryNotice.
   ///
   /// In en, this message translates to:
-  /// **'The 100 most recent saved anomalies are shown. Records are created when analysis runs.'**
+  /// **'Records are loaded in pages, newest first. Only anomalies saved during completed analyses are shown.'**
   String get anomalyHistoryNotice;
 
   /// No description provided for @anomalyHistoryEmpty.
@@ -571,6 +571,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{sensor} · {axis} axis'**
   String sensorAxisLabel(String sensor, String axis);
+
+  /// No description provided for @historyDateRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Date range'**
+  String get historyDateRange;
+
+  /// No description provided for @historyClearFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filter'**
+  String get historyClearFilter;
+
+  /// No description provided for @historyLoadMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Load more'**
+  String get historyLoadMore;
+
+  /// No description provided for @historyLoadMoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load more records. You can try again.'**
+  String get historyLoadMoreFailed;
 }
 
 class _AppLocalizationsDelegate

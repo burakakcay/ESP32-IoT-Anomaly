@@ -92,7 +92,7 @@
 	"aiResultsScope": "The list shows up to the last 10 anomalies used for the AI interpretation. Cached results may be used.",
 	"latestAnalysisTab": "Latest analysis",
 	"savedHistoryTab": "Saved history",
-	"anomalyHistoryNotice": "The 100 most recent saved anomalies are shown. Records are created when analysis runs.",
+	"anomalyHistoryNotice": "Records are loaded in pages, newest first. Only anomalies saved during completed analyses are shown.",
 	"anomalyHistoryEmpty": "No saved anomalies yet.",
 	"anomalyHistoryLoadFailed": "Could not load anomaly history.",
 	"anomalyHistoryCount": "Showing {count} records.",
@@ -111,5 +111,9 @@
 			"sensor": { "type": "String" },
 			"axis": { "type": "String" }
 		}
-	}
+	},
+	"historyDateRange": "Date range",
+	"historyClearFilter": "Clear filter",
+	"historyLoadMore": "Load more",
+	"historyLoadMoreFailed": "Could not load more records. You can try again."
 }

@@ -239,7 +239,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get anomalyHistoryNotice =>
-      'Kaydedilmiş en yeni 100 anomali gösterilir. Kayıtlar, analiz çalıştırıldığında oluşur.';
+      'Kayıtlar yeniden eskiye sıralanır ve sayfalar hâlinde yüklenir. Yalnızca çalıştırılan analizlerde kaydedilen anomaliler gösterilir.';
 
   @override
   String get anomalyHistoryEmpty => 'Henüz kaydedilmiş anomali yok.';
@@ -262,4 +262,17 @@ class AppLocalizationsTr extends AppLocalizations {
   String sensorAxisLabel(String sensor, String axis) {
     return '$sensor · $axis ekseni';
   }
+
+  @override
+  String get historyDateRange => 'Tarih aralığı';
+
+  @override
+  String get historyClearFilter => 'Filtreyi temizle';
+
+  @override
+  String get historyLoadMore => 'Daha fazla yükle';
+
+  @override
+  String get historyLoadMoreFailed =>
+      'Diğer kayıtlar yüklenemedi. Tekrar deneyebilirsiniz.';
 }

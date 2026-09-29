@@ -92,11 +92,31 @@ class ApiService {
     throw Exception('Ai anomali verileri alınamadı: ${response.statusCode}');
   }
 
-  static Future<AnomalyHistoryResponse> getAnomalyHistory() async {
-    final response = await _get(
-      '/api/anomalies/history',
-      timeout: const Duration(seconds: 60),
-    );
+  static Future<AnomalyHistoryResponse> getAnomalyHistory({
+    DateTime? from,
+    DateTime? to,
+    int limit = 20,
+    String? cursor,
+  }) async {
+    String formatDate(DateTime date) {
+      final year = date.year.toString().padLeft(4, '0');
+      final month = date.month.toString().padLeft(2, '0');
+      final day = date.day.toString().padLeft(2, '0');
+
+      return '$year-$month-$day';
+    }
+
+    final path = Uri(
+      path: '/api/anomalies/history',
+      queryParameters: {
+        'limit': limit.toString(),
+        if (from != null) 'from': formatDate(from),
+        if (to != null) 'to': formatDate(to),
+        'cursor': ?cursor,
+      },
+    ).toString();
+
+    final response = await _get(path, timeout: const Duration(seconds: 60));
 
     if (response.statusCode != 200) {
       throw Exception('Anomali geçmişi alınamadı: ${response.statusCode}');

@@ -54,7 +54,7 @@ async function getAnomalyHistory(
     const outsideRange =
       typeof timestamp !== "string" ||
       (fromTimestamp && timestamp < fromTimestamp) ||
-      (toTimestampExclusive && times >= toTimestampExclusive);
+      (toTimestampExclusive && timestamp >= toTimestampExclusive);
 
     if (!cursorDocument.exists || outsideRange) {
       const error = new Error("Geçersiz sayfa işaretçisi");
@@ -75,7 +75,7 @@ async function getAnomalyHistory(
     return {
       ...data,
       id: doc.id,
-      detectedAt: data.detectedAt?.toDate.toISOString() ?? null,
+      detectedAt: data.detectedAt?.toDate().toISOString() ?? null,
     };
   });
 

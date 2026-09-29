@@ -93,7 +93,7 @@
 	"aiResultsScope": "Liste, AI yorumuna kaynak olan en fazla son 10 anomaliyi gösterir. Önbellekteki sonuç kullanılabilir.",
 	"latestAnalysisTab": "Son analiz",
 	"savedHistoryTab": "Geçmiş",
-	"anomalyHistoryNotice": "Kaydedilmiş en yeni 100 anomali gösterilir. Kayıtlar, analiz çalıştırıldığında oluşur.",
+	"anomalyHistoryNotice": "Kayıtlar yeniden eskiye sıralanır ve sayfalar hâlinde yüklenir. Yalnızca çalıştırılan analizlerde kaydedilen anomaliler gösterilir.",	
 	"anomalyHistoryEmpty": "Henüz kaydedilmiş anomali yok.",
 	"anomalyHistoryLoadFailed": "Anomali geçmişi alınamadı.",
 	"anomalyHistoryCount": "{count} kayıt gösteriliyor.",
@@ -112,5 +112,9 @@
 			"sensor": { "type": "String" },
 			"axis": { "type": "String" }
 		}
-	}
+	},
+	"historyDateRange": "Tarih aralığı",
+	"historyClearFilter": "Filtreyi temizle",
+	"historyLoadMore": "Daha fazla yükle",
+	"historyLoadMoreFailed": "Diğer kayıtlar yüklenemedi. Tekrar deneyebilirsiniz."
 }
