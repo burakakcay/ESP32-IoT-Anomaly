@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:sentinel/core/helpers/sensor_label_helper.dart';
 import 'package:sentinel/l10n/app_localizations.dart';
 import 'package:sentinel/models/anomaly.dart';
 import 'package:sentinel/services/api_service.dart';
@@ -124,12 +125,12 @@ class _AnomalyHistoryScreenState extends State<AnomalyHistoryScreen> {
                     title: Text(_formatTimestamp(anomaly.timestamp)),
                     subtitle: Text(
                       '${l10n.affectedSensors}: '
-                      '${anomaly.measurements.keys.join(', ')}',
+                      '${anomaly.measurements.keys.map((field) => sensorLabel(field, l10n)).join(', ')}',
                     ),
                     children: [
                       for (final entry in anomaly.measurements.entries)
                         ListTile(
-                          title: Text(entry.key),
+                          title: Text(sensorLabel(entry.key, l10n)),
                           subtitle: Text(
                             '${l10n.measurementValue}: '
                             '${entry.value.value}\n'

@@ -58,12 +58,17 @@ async function getLatestReading() {
 }
 
 async function getAnomalyHistory() {
-  const results = await fetchAnomalyHistory(db, DEVICE_ID);
+  const { results, nextCursor } = await fetchAnomalyHistory(
+    db,
+    DEVICE_ID,
+    options,
+  );
 
   return {
     device_id: DEVICE_ID,
     returnedCount: results.length,
     results,
+    nextCursor,
   };
 }
 

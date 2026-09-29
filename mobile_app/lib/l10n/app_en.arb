@@ -104,5 +104,12 @@
 		}
 	},
 	"signOutConfirmation": "Do you want to sign out?",
-	"cancelButton": "Cancel"
+	"cancelButton": "Cancel",
+	"sensorAxisLabel": "{sensor} · {axis} axis",
+	"@sensorAxisLabel": {
+		"placeholders": {
+			"sensor": { "type": "String" },
+			"axis": { "type": "String" }
+		}
+	}
 }

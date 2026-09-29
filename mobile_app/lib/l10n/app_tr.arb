@@ -105,5 +105,12 @@
 		}
 	},
 	"signOutConfirmation": "Oturumu kapatmak istiyor musunuz?",
-	"cancelButton": "Vazgeç"
+	"cancelButton": "Vazgeç",
+	"sensorAxisLabel": "{sensor} · {axis} ekseni",
+	"@sensorAxisLabel": {
+		"placeholders": {
+			"sensor": { "type": "String" },
+			"axis": { "type": "String" }
+		}
+	}
 }

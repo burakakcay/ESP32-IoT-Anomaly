@@ -257,4 +257,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get cancelButton => 'Vazgeç';
+
+  @override
+  String sensorAxisLabel(String sensor, String axis) {
+    return '$sensor · $axis ekseni';
+  }
 }

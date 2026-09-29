@@ -565,6 +565,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancel'**
   String get cancelButton;
+
+  /// No description provided for @sensorAxisLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{sensor} · {axis} axis'**
+  String sensorAxisLabel(String sensor, String axis);
 }
 
 class _AppLocalizationsDelegate

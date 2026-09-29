@@ -257,4 +257,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cancelButton => 'Cancel';
+
+  @override
+  String sensorAxisLabel(String sensor, String axis) {
+    return '$sensor · $axis axis';
+  }
 }
