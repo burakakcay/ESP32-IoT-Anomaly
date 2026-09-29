@@ -138,17 +138,7 @@ class _AdminAnomaliesScreenState extends State<AdminAnomaliesScreen> {
           : ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                Text(
-                  response.deviceId,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
                 Text(l10n.measurementsAnalyzed(response.analyzedReadings)),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.latestAnalysisNotice,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
                 const SizedBox(height: 20),
                 Align(
                   alignment: Alignment.centerLeft,
@@ -185,7 +175,21 @@ class _AdminAnomaliesScreenState extends State<AdminAnomaliesScreen> {
                           Icons.warning_amber_rounded,
                           color: Colors.amber,
                         ),
-                        title: Text(_formatTimestamp(anomaly.timestamp)),
+                        title: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              response.deviceId,
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme.onSurfaceVariant,
+                                  ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(_formatTimestamp(anomaly.timestamp)),
+                          ],
+                        ),
                         subtitle: Text(
                           '${l10n.affectedSensors}: '
                           '${anomaly.measurements.keys.map((field) => sensorLabel(field, l10n)).join(', ')}',

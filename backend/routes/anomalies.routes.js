@@ -5,6 +5,7 @@ function badRequest(message) {
   error.statusCode = 400;
   return error;
 }
+
 function parseDate(value, name) {
   if (value === undefined) return undefined;
 
@@ -22,9 +23,24 @@ function parseDate(value, name) {
   }
   return date;
 }
+
 function parseHistoryOptions(query) {
   const from = parseDate(query.from, "from");
   const to = parseDate(query.to, "to");
+
+  const sensor = query.sensor;
+  const allowedSensors = [
+    "temperature",
+    "humidity",
+    "acceleration",
+    "gyroscope",
+  ];
+  if (
+    sensor !== undefined &&
+    (typeof sensor !== "string" || !allowedSensors.includes(sensor))
+  ) {
+    throw badRequest("Geçersiz sensör filtresi.");
+  }
 
   if (from && to && from > to) {
     throw badRequest("Başlangıç tarihi bitiş tarihinden sonra olamaz.");
@@ -77,8 +93,10 @@ function parseHistoryOptions(query) {
     toTimestampExclusive,
     limit,
     cursor,
+    ...(sensor !== undefined ? { sensor } : {}),
   };
 }
+
 function createAnomaliesRouter({
   getAnomalyResponse,
   getAIResponse,

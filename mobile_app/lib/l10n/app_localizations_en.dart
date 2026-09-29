@@ -215,10 +215,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Unable to load analysis results. Use Refresh to try again.';
 
   @override
-  String get latestAnalysisNotice =>
-      'Only anomalies in the latest batch of readings are shown. This is not a permanent anomaly history.';
-
-  @override
   String get measurementValue => 'Reading';
 
   @override
@@ -238,11 +234,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get savedHistoryTab => 'Saved history';
 
   @override
-  String get anomalyHistoryNotice =>
-      'Records are loaded in pages, newest first. Only anomalies saved during completed analyses are shown.';
+  String get anomalyHistoryEmpty => 'No saved anomalies yet.';
 
   @override
-  String get anomalyHistoryEmpty => 'No saved anomalies yet.';
+  String get anomalyHistoryFilteredEmpty =>
+      'No anomalies match the selected filters.';
 
   @override
   String get anomalyHistoryLoadFailed => 'Could not load anomaly history.';
@@ -275,4 +271,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get historyLoadMoreFailed =>
       'Could not load more records. You can try again.';
+
+  @override
+  String get historySensorFilter => 'Sensor';
+
+  @override
+  String get historyAllSensors => 'All';
 }

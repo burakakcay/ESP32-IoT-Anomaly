@@ -1,5 +1,21 @@
 const { FieldValue } = require("firebase-admin/firestore");
 
+function getSensorGroups(measurements) {
+  const groups = new Set();
+
+  for (const field of Object.keys(measurements)) {
+    if (field === "temperature" || field === "humidity") {
+      groups.add(field);
+    } else if (["accel_x", "accel_y", "accel_z"].includes(field)) {
+      groups.add("acceleration");
+    } else if (["gyro_x", "gyro_y", "gyro_z"].includes(field)) {
+      groups.add("gyroscope");
+    }
+  }
+
+  return [...groups];
+}
+
 async function saveAnomalies(db, deviceId, results) {
   const collection = db
     .collection("devices")
@@ -19,6 +35,7 @@ async function saveAnomalies(db, deviceId, results) {
       await document.create({
         ...result,
         device_id: deviceId,
+        sensorGroups: getSensorGroups(result.measurements),
         detectedAt: FieldValue.serverTimestamp(),
       });
     } catch (error) {
@@ -33,7 +50,7 @@ async function saveAnomalies(db, deviceId, results) {
 async function getAnomalyHistory(
   db,
   deviceId,
-  { fromTimestamp, toTimestampExclusive, limit = 20, cursor } = {},
+  { fromTimestamp, toTimestampExclusive, limit = 20, cursor, sensor } = {},
 ) {
   const collection = db
     .collection("devices")
@@ -41,6 +58,10 @@ async function getAnomalyHistory(
     .collection("anomalies");
 
   let query = collection.orderBy("timestamp", "desc");
+
+  if (sensor) {
+    query = query.where("sensorGroups", "array-contains", sensor);
+  }
 
   if (fromTimestamp) query = query.where("timestamp", ">=", fromTimestamp);
 
@@ -50,13 +71,17 @@ async function getAnomalyHistory(
   if (cursor) {
     const cursorDocument = await collection.doc(cursor).get();
     const timestamp = cursorDocument.data()?.timestamp;
+    const sensorGroups = cursorDocument.data()?.sensorGroups;
+    const outsideSensor =
+      sensor !== undefined &&
+      (!Array.isArray(sensorGroups) || !sensorGroups.includes(sensor));
 
     const outsideRange =
       typeof timestamp !== "string" ||
       (fromTimestamp && timestamp < fromTimestamp) ||
       (toTimestampExclusive && timestamp >= toTimestampExclusive);
 
-    if (!cursorDocument.exists || outsideRange) {
+    if (!cursorDocument.exists || outsideRange || outsideSensor) {
       const error = new Error("Geçersiz sayfa işaretçisi");
       error.statusCode = 400;
       throw error;

@@ -215,10 +215,6 @@ class AppLocalizationsTr extends AppLocalizations {
       'Analiz sonuçları alınamadı. Yenile düğmesiyle tekrar deneyebilirsiniz.';
 
   @override
-  String get latestAnalysisNotice =>
-      'Yalnızca son ölçüm grubundaki anomaliler gösterilir. Bu liste kalıcı anomali geçmişi değildir.';
-
-  @override
   String get measurementValue => 'Ölçüm';
 
   @override
@@ -238,11 +234,11 @@ class AppLocalizationsTr extends AppLocalizations {
   String get savedHistoryTab => 'Geçmiş';
 
   @override
-  String get anomalyHistoryNotice =>
-      'Kayıtlar yeniden eskiye sıralanır ve sayfalar hâlinde yüklenir. Yalnızca çalıştırılan analizlerde kaydedilen anomaliler gösterilir.';
+  String get anomalyHistoryEmpty => 'Henüz kaydedilmiş anomali yok.';
 
   @override
-  String get anomalyHistoryEmpty => 'Henüz kaydedilmiş anomali yok.';
+  String get anomalyHistoryFilteredEmpty =>
+      'Seçilen filtrelere uygun anomali bulunamadı.';
 
   @override
   String get anomalyHistoryLoadFailed => 'Anomali geçmişi alınamadı.';
@@ -275,4 +271,10 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get historyLoadMoreFailed =>
       'Diğer kayıtlar yüklenemedi. Tekrar deneyebilirsiniz.';
+
+  @override
+  String get historySensorFilter => 'Sensör';
+
+  @override
+  String get historyAllSensors => 'Tümü';
 }

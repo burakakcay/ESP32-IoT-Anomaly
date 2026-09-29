@@ -488,12 +488,6 @@ abstract class AppLocalizations {
   /// **'Unable to load analysis results. Use Refresh to try again.'**
   String get anomalyLoadFailed;
 
-  /// No description provided for @latestAnalysisNotice.
-  ///
-  /// In en, this message translates to:
-  /// **'Only anomalies in the latest batch of readings are shown. This is not a permanent anomaly history.'**
-  String get latestAnalysisNotice;
-
   /// No description provided for @measurementValue.
   ///
   /// In en, this message translates to:
@@ -530,17 +524,17 @@ abstract class AppLocalizations {
   /// **'Saved history'**
   String get savedHistoryTab;
 
-  /// No description provided for @anomalyHistoryNotice.
-  ///
-  /// In en, this message translates to:
-  /// **'Records are loaded in pages, newest first. Only anomalies saved during completed analyses are shown.'**
-  String get anomalyHistoryNotice;
-
   /// No description provided for @anomalyHistoryEmpty.
   ///
   /// In en, this message translates to:
   /// **'No saved anomalies yet.'**
   String get anomalyHistoryEmpty;
+
+  /// No description provided for @anomalyHistoryFilteredEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No anomalies match the selected filters.'**
+  String get anomalyHistoryFilteredEmpty;
 
   /// No description provided for @anomalyHistoryLoadFailed.
   ///
@@ -595,6 +589,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not load more records. You can try again.'**
   String get historyLoadMoreFailed;
+
+  /// No description provided for @historySensorFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Sensor'**
+  String get historySensorFilter;
+
+  /// No description provided for @historyAllSensors.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get historyAllSensors;
 }
 
 class _AppLocalizationsDelegate

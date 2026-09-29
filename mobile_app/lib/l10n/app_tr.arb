@@ -44,6 +44,7 @@
 	"possibleCause": "Olası Neden",
 	"affectedSensors": "Etkilenen Sensörler",
 	"anomalyHistory": "Anomali Geçmişi",
+	"anomalyHistoryFilteredEmpty": "Seçilen filtrelere uygun anomali bulunamadı.",
 	"detectedAnomalies": "Tespit Edilen Anomali",
 	"analyzedMeasurements": "İncelenen Ölçüm",
 	"unusualValuesDetected": "{count} sensörde olağan dışı değer tespit edildi.",
@@ -93,7 +94,6 @@
 	"aiResultsScope": "Liste, AI yorumuna kaynak olan en fazla son 10 anomaliyi gösterir. Önbellekteki sonuç kullanılabilir.",
 	"latestAnalysisTab": "Son analiz",
 	"savedHistoryTab": "Geçmiş",
-	"anomalyHistoryNotice": "Kayıtlar yeniden eskiye sıralanır ve sayfalar hâlinde yüklenir. Yalnızca çalıştırılan analizlerde kaydedilen anomaliler gösterilir.",	
 	"anomalyHistoryEmpty": "Henüz kaydedilmiş anomali yok.",
 	"anomalyHistoryLoadFailed": "Anomali geçmişi alınamadı.",
 	"anomalyHistoryCount": "{count} kayıt gösteriliyor.",
@@ -116,5 +116,7 @@
 	"historyDateRange": "Tarih aralığı",
 	"historyClearFilter": "Filtreyi temizle",
 	"historyLoadMore": "Daha fazla yükle",
-	"historyLoadMoreFailed": "Diğer kayıtlar yüklenemedi. Tekrar deneyebilirsiniz."
+	"historyLoadMoreFailed": "Diğer kayıtlar yüklenemedi. Tekrar deneyebilirsiniz.",
+	"historySensorFilter": "Sensör",
+	"historyAllSensors": "Tümü"
 }

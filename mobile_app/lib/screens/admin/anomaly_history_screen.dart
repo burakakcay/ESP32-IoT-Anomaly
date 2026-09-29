@@ -15,6 +15,7 @@ class AnomalyHistoryScreen extends StatefulWidget {
 class _AnomalyHistoryScreenState extends State<AnomalyHistoryScreen> {
   AnomalyHistoryResponse? _response;
   DateTimeRange? _dateRange;
+  String? _selectedSensor;
 
   bool _isLoading = false;
   bool _isLoadingMore = false;
@@ -55,6 +56,7 @@ class _AnomalyHistoryScreenState extends State<AnomalyHistoryScreen> {
         to: _dateRange?.end,
         limit: 20,
         cursor: cursor,
+        sensor: _selectedSensor,
       );
 
       if (!mounted) return;
@@ -113,10 +115,14 @@ class _AnomalyHistoryScreenState extends State<AnomalyHistoryScreen> {
     await _loadHistory();
   }
 
-  Future<void> _clearDateRange() async {
+  Future<void> _clearFilters() async {
     if (_isBusy) return;
 
-    setState(() => _dateRange = null);
+    setState(() {
+      _dateRange = null;
+      _selectedSensor = null;
+    });
+
     await _loadHistory();
   }
 
@@ -146,14 +152,84 @@ class _AnomalyHistoryScreenState extends State<AnomalyHistoryScreen> {
           runSpacing: 8,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            OutlinedButton.icon(
-              onPressed: _isBusy ? null : _selectDateRange,
-              icon: const Icon(Icons.date_range),
-              label: Text(label),
+            SizedBox(
+              width: 200,
+              height: 48,
+              child: InputDecorator(
+                decoration: InputDecoration(
+                  labelText: l10n.historySensorFilter,
+                  border: const OutlineInputBorder(),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _selectedSensor ?? 'all',
+                    isDense: true,
+                    isExpanded: true,
+                    items: [
+                      DropdownMenuItem(
+                        value: 'all',
+                        child: Text(l10n.historyAllSensors),
+                      ),
+                      DropdownMenuItem(
+                        value: 'temperature',
+                        child: Text(l10n.temperature),
+                      ),
+                      DropdownMenuItem(
+                        value: 'humidity',
+                        child: Text(l10n.humidity),
+                      ),
+                      DropdownMenuItem(
+                        value: 'acceleration',
+                        child: Text(l10n.acceleration),
+                      ),
+                      DropdownMenuItem(
+                        value: 'gyroscope',
+                        child: Text(l10n.gyroscope),
+                      ),
+                    ],
+                    onChanged: _isBusy
+                        ? null
+                        : (value) async {
+                            if (value == null) return;
+
+                            final sensor = value == 'all' ? null : value;
+
+                            if (sensor == _selectedSensor) return;
+
+                            setState(() => _selectedSensor = sensor);
+                            await _loadHistory();
+                          },
+                  ),
+                ),
+              ),
             ),
-            if (range != null)
+            SizedBox(
+              height: 48,
+              child: OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                onPressed: _isBusy ? null : _selectDateRange,
+                icon: const Icon(Icons.date_range),
+                label: Text(label),
+              ),
+            ),
+            if (range != null || _selectedSensor != null)
               TextButton(
-                onPressed: _isBusy ? null : _clearDateRange,
+                style: TextButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                onPressed: _isBusy ? null : _clearFilters,
                 child: Text(l10n.historyClearFilter),
               ),
           ],
@@ -162,7 +238,11 @@ class _AnomalyHistoryScreenState extends State<AnomalyHistoryScreen> {
     );
   }
 
-  Widget _buildAnomalyCard(AnomalyResult anomaly, AppLocalizations l10n) {
+  Widget _buildAnomalyCard(
+    AnomalyResult anomaly,
+    AppLocalizations l10n,
+    String deviceId,
+  ) {
     final sensors = anomaly.measurements.keys
         .map((field) => sensorLabel(field, l10n))
         .join(', ');
@@ -171,7 +251,19 @@ class _AnomalyHistoryScreenState extends State<AnomalyHistoryScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       child: ExpansionTile(
         leading: const Icon(Icons.warning_amber_rounded, color: Colors.amber),
-        title: Text(_formatTimestamp(anomaly.timestamp)),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              deviceId,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(_formatTimestamp(anomaly.timestamp)),
+          ],
+        ),
         subtitle: Text('${l10n.affectedSensors}: $sensors'),
         children: [
           for (final entry in anomaly.measurements.entries)
@@ -215,20 +307,14 @@ class _AnomalyHistoryScreenState extends State<AnomalyHistoryScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  response.deviceId,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
                 Text(l10n.anomalyHistoryCount(response.results.length)),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.anomalyHistoryNotice,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
                 if (response.results.isEmpty) ...[
                   const SizedBox(height: 24),
-                  Text(l10n.anomalyHistoryEmpty),
+                  Text(
+                    _dateRange != null || _selectedSensor != null
+                        ? l10n.anomalyHistoryFilteredEmpty
+                        : l10n.anomalyHistoryEmpty,
+                  ),
                 ],
               ],
             ),
@@ -253,7 +339,11 @@ class _AnomalyHistoryScreenState extends State<AnomalyHistoryScreen> {
           );
         }
 
-        return _buildAnomalyCard(response.results[index - 1], l10n);
+        return _buildAnomalyCard(
+          response.results[index - 1],
+          l10n,
+          response.deviceId,
+        );
       },
     );
   }

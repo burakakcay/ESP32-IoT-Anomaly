@@ -297,3 +297,53 @@ for (const [description, query] of invalidHistoryQueries) {
     assert.ok(response.body.error.length > 0);
   });
 }
+
+test("Geçmiş sorgusu sensör filtresini servise aktarır", async () => {
+  let receivedOptions;
+
+  const app = createTestApp({
+    getAnomalyHistory: async (options) => {
+      receivedOptions = options;
+      return { results: [], nextCursor: null };
+    },
+  });
+
+  await request(app)
+    .get("/api/anomalies/history")
+    .query({
+      sensor: "gyroscope",
+      from: "2026-09-24",
+      to: "2026-09-24",
+      limit: "2",
+    })
+    .expect(200);
+
+  assert.deepEqual(receivedOptions, {
+    fromTimestamp: "2026-09-24T00:00:00",
+    toTimestampExclusive: "2026-09-25T00:00:00",
+    limit: 2,
+    cursor: undefined,
+    sensor: "gyroscope",
+  });
+});
+
+test("Geçmiş sorgusu geçersiz sensörü servise iletmeden reddeder", async () => {
+  let serviceCalled = false;
+
+  const app = createTestApp({
+    getAnomalyHistory: async () => {
+      serviceCalled = true;
+      return { results: [] };
+    },
+  });
+
+  const response = await request(app)
+    .get("/api/anomalies/history")
+    .query({ sensor: "unknown" })
+    .expect(400);
+
+  assert.equal(serviceCalled, false);
+  assert.deepEqual(response.body, {
+    error: "Geçersiz sensör filtresi.",
+  });
+});

@@ -97,6 +97,7 @@ class ApiService {
     DateTime? to,
     int limit = 20,
     String? cursor,
+    String? sensor,
   }) async {
     String formatDate(DateTime date) {
       final year = date.year.toString().padLeft(4, '0');
@@ -113,6 +114,7 @@ class ApiService {
         if (from != null) 'from': formatDate(from),
         if (to != null) 'to': formatDate(to),
         'cursor': ?cursor,
+        'sensor': ?sensor,
       },
     ).toString();
 
