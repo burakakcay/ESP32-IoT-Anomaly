@@ -1,3 +1,4 @@
+#include "logger.h"
 #include "network_service.h"
 
 #include <Arduino.h>
@@ -8,10 +9,11 @@
 #include "secrets.h"
 #include "sensors.h"
 
-namespace {
+namespace
+{
     WebServer server(80);
 
-    const char* activeDeviceId = nullptr;
+    const char *activeDeviceId = nullptr;
 
     bool networkServiceStarted = false;
 
@@ -36,10 +38,7 @@ namespace {
             millis() - startAttemptTime < WIFI_TIMEOUT_MS)
         {
             delay(500);
-            Serial.print(".");
         }
-
-        Serial.println();
 
         return WiFi.status() == WL_CONNECTED;
     }
@@ -53,8 +52,10 @@ namespace {
         const uint32_t startAttemptTime = millis();
         struct tm timeInfo;
 
-        while (millis() - startAttemptTime < NTP_TIMEOUT_MS) {
-            if (getLocalTime(&timeInfo)) {
+        while (millis() - startAttemptTime < NTP_TIMEOUT_MS)
+        {
+            if (getLocalTime(&timeInfo))
+            {
                 return true;
             }
 
@@ -68,7 +69,17 @@ namespace {
     {
         const SensorReading reading = readSensorData();
 
-        if (!reading.hasValidTime) {
+        if (!reading.hasValidMotion)
+        {
+            server.send(
+                503,
+                "application/json",
+                "{\"status\":\"motion_unavailable\"}");
+            return;
+        }
+
+        if (!reading.hasValidTime)
+        {
             server.send(
                 503,
                 "application/json",
@@ -84,7 +95,8 @@ namespace {
 
     void startHttpServer()
     {
-        if (networkServiceStarted) {
+        if (networkServiceStarted)
+        {
             return;
         }
 
@@ -92,74 +104,80 @@ namespace {
         server.begin();
 
         networkServiceStarted = true;
-
-        Serial.print("ESP32 IP Adresi: ");
-        Serial.println(WiFi.localIP());
-        Serial.println("HTTP sunucusu başlatıldı.");
     }
 
     void reconnectWifiIfNeeded()
     {
-        if (isWifiConnected()) {
+        if (isWifiConnected())
+        {
             return;
         }
 
-        if (millis() - lastWifiReconnectAttempt < WIFI_RETRY_INTERVAL_MS) {
+        if (millis() - lastWifiReconnectAttempt < WIFI_RETRY_INTERVAL_MS)
+        {
             return;
         }
 
         lastWifiReconnectAttempt = millis();
 
-        Serial.println("{\"status\":\"wifi_reconnecting\"}");
+        SentinelLog::write(SentinelLog::Level::Warning, "WIFI", "Yeniden baglaniliyor...");
 
-        if (connectWifi()) {
-            Serial.println("{\"status\":\"wifi_reconnected\"}");
+        if (connectWifi())
+        {
+            SentinelLog::write(SentinelLog::Level::Info, "WIFI", "Bağlandı. IP: %s", WiFi.localIP().toString().c_str());
 
-            if (!networkServiceStarted) {
+            if (!networkServiceStarted)
+            {
                 startHttpServer();
             }
 
-            syncTimeFromNTP();
-        } else {
-            Serial.println("{\"status\":\"wifi_reconnect_failed\"}");
+            if (!syncTimeFromNTP())
+            {
+                SentinelLog::write(SentinelLog::Level::Error, "SAAT", "Senkronizasyon basarisiz.");
+            }
+        }
+        else
+        {
+            SentinelLog::write(SentinelLog::Level::Error, "WIFI", "Yeniden baglanti kurulamadi.");
         }
     }
 
     void resyncTimeIfNeeded()
     {
-        if (millis() - lastTimeSyncAttempt < RESYNC_INTERVAL_MS) {
+        if (millis() - lastTimeSyncAttempt < RESYNC_INTERVAL_MS)
+        {
             return;
         }
 
         lastTimeSyncAttempt = millis();
 
-        if (!isWifiConnected()) {
-            Serial.println(
-                "{\"status\":\"time_resync_skipped_wifi_disconnected\"}");
+        if (!isWifiConnected())
+        {
             return;
         }
 
-        if (syncTimeFromNTP()) {
-            Serial.println("{\"status\":\"time_resynced\"}");
-        } else {
-            Serial.println("{\"status\":\"time_resync_failed\"}");
+        if (!syncTimeFromNTP())
+        {
+            SentinelLog::write(SentinelLog::Level::Error, "SAAT", "Senkronizasyon basarisiz.");
         }
     }
 }
 
-void initializeNetworkService(const char* deviceId)
+void initializeNetworkService(const char *deviceId)
 {
     activeDeviceId = deviceId;
 
-    if (!connectWifi()) {
-        Serial.println("{\"status\":\"wifi_connection_failed\"}");
+    if (!connectWifi())
+    {
+        SentinelLog::write(SentinelLog::Level::Error, "WIFI", "Bağlantı kurulamadı.");
         return;
     }
 
-    if (syncTimeFromNTP()) {
-        Serial.println("{\"status\":\"wifi_connected_and_time_set\"}");
-    } else {
-        Serial.println("{\"status\":\"wifi_connected_but_time_not_set\"}");
+    SentinelLog::write(SentinelLog::Level::Info, "WIFI", "Bağlandı. IP: %s", WiFi.localIP().toString().c_str());
+
+    if (!syncTimeFromNTP())
+    {
+        SentinelLog::write(SentinelLog::Level::Error, "SAAT", "Senkronizasyon başarısız.");
     }
 
     startHttpServer();
@@ -169,7 +187,8 @@ void updateNetworkService()
 {
     reconnectWifiIfNeeded();
 
-    if (networkServiceStarted && isWifiConnected()) {
+    if (networkServiceStarted && isWifiConnected())
+    {
         server.handleClient();
     }
 

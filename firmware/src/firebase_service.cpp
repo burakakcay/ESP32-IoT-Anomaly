@@ -1,3 +1,4 @@
+#include "logger.h"
 
 #define ENABLE_USER_AUTH
 #define ENABLE_FIRESTORE
@@ -33,41 +34,35 @@ namespace
 
     void processFirestoreResult(AsyncResult &aResult)
     {
-        // FirebaseClient asenkron sonucu yoksa işlenecek durum da yoktur.
         if (!aResult.isResult())
             return;
 
-        if (aResult.isEvent())
-        {
-            Firebase.printf(
-                "Event task: %s, msg: %s, code: %d\n",
-                aResult.uid().c_str(),
-                aResult.eventLog().message().c_str(),
-                aResult.eventLog().code());
-        }
-
-        if (aResult.isDebug())
-        {
-            Firebase.printf(
-                "Debug task: %s, msg: %s\n",
-                aResult.uid().c_str(),
-                aResult.debug().c_str());
-        }
-
         if (aResult.isError())
         {
-            Firebase.printf(
-                "Error task: %s, msg: %s, code: %d\n",
-                aResult.uid().c_str(),
-                aResult.error().message().c_str(),
-                aResult.error().code());
+            SentinelLog::write(SentinelLog::Level::Error, "FIRESTORE",
+                               "Kod %d: %s",
+                               aResult.error().code(),
+                               aResult.error().message().c_str());
+            return;
         }
 
         if (aResult.available())
         {
-            Firebase.printf(
-                "Firestore payload: %s\n",
-                aResult.c_str());
+            (void)aResult.c_str();
+            SentinelLog::write(SentinelLog::Level::Debug, "FIRESTORE", "Kaydedildi.");
+        }
+    }
+
+    void processAuthResult(AsyncResult &aResult)
+    {
+        if (!aResult.isResult())
+            return;
+        if (aResult.isError())
+        {
+            SentinelLog::write(SentinelLog::Level::Error, "FIREBASE",
+                               "Kod %d: %s",
+                               aResult.error().code(),
+                               aResult.error().message().c_str());
         }
     }
 }
@@ -81,13 +76,11 @@ void initializeFirebaseService()
 
     set_ssl_client_insecure_and_buffer(ssl_client);
 
-    Serial.println("Firebase servisi başlatılıyor...");
-
     initializeApp(
         asyncClient,
         app,
         getAuth(user_auth),
-        auth_debug_print,
+        processAuthResult,
         "firebaseAuthTask");
     app.getApp<Firestore::Documents>(documents);
 
@@ -107,11 +100,7 @@ void updateFirebaseService()
     {
         firebaseAuthenticationLogged = true;
 
-        Serial.println("================================");
-        Serial.println("Firebase authentication başarılı!");
-        Serial.print("UID: ");
-        Serial.println(app.getUid());
-        Serial.println("================================");
+        SentinelLog::write(SentinelLog::Level::Info, "FIREBASE", "Oturum açıldı.");
     }
 }
 
@@ -127,7 +116,7 @@ void sendReadingToFirestore(
 
     if (!reading.hasValidTime)
     {
-        Serial.println("Firestore: Zaman bilgisi alınamadı.");
+        SentinelLog::write(SentinelLog::Level::Error, "FIRESTORE", "Zaman bilgisi yok; gonderim atlandi.");
         return;
     }
 
@@ -159,7 +148,7 @@ void sendReadingToFirestore(
     else
     {
         doc.add("temperature", Values::Value(Values::NullValue()));
-        Serial.println("Firestore: Sıcaklık verisi geçersiz, gönderilmiyor.");
+        SentinelLog::write(SentinelLog::Level::Warning, "SENSOR", "Sicaklik gecersiz; null kaydedilecek.");
     }
     if (!isnan(reading.humidity))
     {
@@ -182,7 +171,6 @@ void sendReadingToFirestore(
     doc.add("gyro_y", Values::Value(gyroYValue));
     doc.add("gyro_z", Values::Value(gyroZValue));
 
-    Serial.println("Firestore: Sensör verisi gönderiliyor...");
     documents.createDocument(
         asyncClient,
         Firestore::Parent(FIREBASE_PROJECT_ID),

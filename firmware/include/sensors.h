@@ -2,7 +2,8 @@
 
 #include <Arduino.h>
 
-struct SensorReading {
+struct SensorReading
+{
     float temperature;
     float humidity;
 
@@ -16,12 +17,14 @@ struct SensorReading {
 
     String timestamp;
     bool hasValidTime;
+    bool hasValidMotion = false;
 };
 
 void initializeSensors();
+void updateVibrationSampling();
 
 SensorReading readSensorData();
 
 String createSensorJson(
-    const SensorReading& reading,
-    const char* deviceId);
+    const SensorReading &reading,
+    const char *deviceId);

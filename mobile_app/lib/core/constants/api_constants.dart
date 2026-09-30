@@ -1,5 +1,6 @@
 class ApiConstants {
-  static const String nodeBaseUrl =
-      // 'http://localhost:3000';
-      'https://sentinel-backend-s3yl.onrender.com';
+  static const String nodeBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://sentinel-backend-s3yl.onrender.com',
+  );
 }
