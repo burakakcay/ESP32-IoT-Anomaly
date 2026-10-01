@@ -10,6 +10,7 @@ import 'package:sentinel/models/anomaly.dart';
 import 'package:sentinel/models/sensor_data.dart';
 import 'package:sentinel/screens/anomaly_screen.dart';
 import 'package:sentinel/screens/sensor_detail_screen.dart';
+import 'package:sentinel/screens/vibration_detail_screen.dart';
 import 'package:sentinel/services/api_service.dart';
 import 'package:sentinel/services/auth_service.dart';
 import 'package:sentinel/services/sensor_history_device.dart';
@@ -321,7 +322,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 const SizedBox(height: 16),
 
-                _VibrationCards(reading: _sensorData),
+                _VibrationCards(
+                  reading: _sensorData,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => VibrationDetailScreen(
+                          historyService: _historyService,
+                        ),
+                      ),
+                    );
+                  },
+                ),
 
                 const SizedBox(height: 16),
 
@@ -353,14 +366,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void dispose() {
     _refreshTimer?.cancel();
+    _historyService.dispose();
     super.dispose();
   }
 }
 
 class _VibrationCards extends StatelessWidget {
   final SensorData? reading;
+  final VoidCallback onTap;
 
-  const _VibrationCards({required this.reading});
+  const _VibrationCards({required this.reading, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -376,11 +391,13 @@ class _VibrationCards extends StatelessWidget {
                 title: l10n.vibrationLastRms,
                 value: reading?.lastRmsG,
                 icon: Icons.vibration,
+                onTap: onTap,
               ),
               _VibrationValueCard(
                 title: l10n.vibrationIntervalPeak,
                 value: reading?.peakG,
                 icon: Icons.show_chart,
+                onTap: onTap,
               ),
             ];
 
@@ -432,11 +449,13 @@ class _VibrationValueCard extends StatelessWidget {
   final String title;
   final double? value;
   final IconData icon;
+  final VoidCallback onTap;
 
   const _VibrationValueCard({
     required this.title,
     required this.value,
     required this.icon,
+    required this.onTap,
   });
 
   @override
@@ -449,24 +468,28 @@ class _VibrationValueCard extends StatelessWidget {
 
     return Card(
       margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(icon, color: theme.colorScheme.primary),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(title, style: theme.textTheme.titleMedium),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(text, style: theme.textTheme.headlineSmall),
-          ],
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(icon, color: theme.colorScheme.primary),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(title, style: theme.textTheme.titleMedium),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(text, style: theme.textTheme.headlineSmall),
+            ],
+          ),
         ),
       ),
     );

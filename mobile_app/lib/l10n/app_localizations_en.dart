@@ -291,4 +291,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get vibrationSamplingWarning =>
       'A sampling interruption or read error occurred. Values cover valid windows only.';
+
+  @override
+  String get vibrationHistory => 'Vibration history';
+
+  @override
+  String get vibrationHistoryHint =>
+      'Points show the record time. RMS represents the latest valid window; peak represents the upload interval. Touch the chart to inspect values.';
 }

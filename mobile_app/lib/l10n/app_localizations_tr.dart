@@ -291,4 +291,11 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get vibrationSamplingWarning =>
       'Örnekleme kesintisi veya okuma hatası var. Değerler yalnızca geçerli pencereleri kapsıyor.';
+
+  @override
+  String get vibrationHistory => 'Titreşim geçmişi';
+
+  @override
+  String get vibrationHistoryHint =>
+      'Noktalar kayıt zamanını gösterir. RMS son geçerli pencereye, tepe değeri gönderim aralığına aittir. Değerleri görmek için grafiğe dokunun.';
 }

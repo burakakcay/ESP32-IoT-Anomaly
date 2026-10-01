@@ -625,6 +625,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A sampling interruption or read error occurred. Values cover valid windows only.'**
   String get vibrationSamplingWarning;
+
+  /// No description provided for @vibrationHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibration history'**
+  String get vibrationHistory;
+
+  /// No description provided for @vibrationHistoryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Points show the record time. RMS represents the latest valid window; peak represents the upload interval. Touch the chart to inspect values.'**
+  String get vibrationHistoryHint;
 }
 
 class _AppLocalizationsDelegate

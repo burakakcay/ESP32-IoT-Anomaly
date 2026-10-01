@@ -2,8 +2,9 @@
 library;
 
 import 'package:sentinel/models/sensor_data.dart';
+import 'package:flutter/foundation.dart';
 
-class SensorHistoryService {
+class SensorHistoryService extends ChangeNotifier {
   static const int maxHistory = 240;
 
   final List<SensorData> _history = [];
@@ -54,6 +55,8 @@ class SensorHistoryService {
     if (_history.length > maxHistory) {
       _history.removeAt(0);
     }
+
+    notifyListeners();
   }
 
   double? get minTemperature {
@@ -96,5 +99,6 @@ class SensorHistoryService {
 
   void clear() {
     _history.clear();
+    notifyListeners();
   }
 }

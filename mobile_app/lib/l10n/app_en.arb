@@ -120,5 +120,7 @@
 	"vibrationLastRms": "Latest vibration RMS",
 	"vibrationIntervalPeak": "Interval peak",
 	"vibrationSaturationWarning": "Measurement limit reached. The peak may not represent the full motion.",
-	"vibrationSamplingWarning": "A sampling interruption or read error occurred. Values cover valid windows only."
+	"vibrationSamplingWarning": "A sampling interruption or read error occurred. Values cover valid windows only.",
+	"vibrationHistory": "Vibration history",
+	"vibrationHistoryHint": "Points show the record time. RMS represents the latest valid window; peak represents the upload interval. Touch the chart to inspect values."
 }
