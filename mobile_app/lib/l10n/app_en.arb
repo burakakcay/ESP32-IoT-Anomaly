@@ -116,5 +116,9 @@
 	"historyLoadMore": "Load more",
 	"historyLoadMoreFailed": "Could not load more records. You can try again.",
 	"historySensorFilter": "Sensor",
-	"historyAllSensors": "All"
+	"historyAllSensors": "All",
+	"vibrationLastRms": "Latest vibration RMS",
+	"vibrationIntervalPeak": "Interval peak",
+	"vibrationSaturationWarning": "Measurement limit reached. The peak may not represent the full motion.",
+	"vibrationSamplingWarning": "A sampling interruption or read error occurred. Values cover valid windows only."
 }

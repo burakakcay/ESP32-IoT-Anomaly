@@ -2,6 +2,21 @@
 
 #include <Arduino.h>
 
+struct VibrationSummary
+{
+    float lastRmsG = 0.0f;
+    float peakG = 0.0f;
+
+    uint32_t lastWindowAgeMs = 0;
+    uint32_t intervalMs = 0;
+    uint32_t validWindowCount = 0;
+
+    bool hasValidLast = false;
+    bool hasValidPeak = false;
+    bool hadSaturation = false;
+    bool hadSamplingError = false;
+};
+
 struct SensorReading
 {
     float temperature;
@@ -18,10 +33,12 @@ struct SensorReading
     String timestamp;
     bool hasValidTime;
     bool hasValidMotion = false;
+    VibrationSummary vibration;
 };
 
 void initializeSensors();
 void updateVibrationSampling();
+void collectVibrationForUpload(SensorReading &reading);
 
 SensorReading readSensorData();
 

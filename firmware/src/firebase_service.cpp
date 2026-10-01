@@ -171,6 +171,63 @@ void sendReadingToFirestore(
     doc.add("gyro_y", Values::Value(gyroYValue));
     doc.add("gyro_z", Values::Value(gyroZValue));
 
+    const VibrationSummary &vibration = reading.vibration;
+
+    if (vibration.hasValidLast && isfinite(vibration.lastRmsG))
+    {
+        doc.add(
+            "last_rms_g",
+            Values::Value(
+                Values::DoubleValue(number_t(vibration.lastRmsG, 4))));
+    }
+    else
+    {
+        doc.add("last_rms_g", Values::Value(Values::NullValue()));
+    }
+
+    if (vibration.hasValidPeak && isfinite(vibration.peakG))
+    {
+        doc.add(
+            "peak_g",
+            Values::Value(
+                Values::DoubleValue(number_t(vibration.peakG, 4))));
+    }
+    else
+    {
+        doc.add("peak_g", Values::Value(Values::NullValue()));
+    }
+
+    if (vibration.validWindowCount > 0)
+    {
+        doc.add(
+            "vibration_last_age_ms",
+            Values::Value(
+                Values::IntegerValue(vibration.lastWindowAgeMs)));
+    }
+    else
+    {
+        doc.add(
+            "vibration_last_age_ms",
+            Values::Value(Values::NullValue()));
+    }
+
+    doc.add(
+        "vibration_interval_ms",
+        Values::Value(
+            Values::IntegerValue(vibration.intervalMs)));
+
+    doc.add(
+        "vibration_window_count",
+        Values::Value(Values::IntegerValue(vibration.validWindowCount)));
+
+    doc.add(
+        "vibration_saturated",
+        Values::Value(Values::BooleanValue(vibration.hadSaturation)));
+
+    doc.add(
+        "vibration_sampling_error",
+        Values::Value(Values::BooleanValue(vibration.hadSamplingError)));
+
     documents.createDocument(
         asyncClient,
         Firestore::Parent(FIREBASE_PROJECT_ID),

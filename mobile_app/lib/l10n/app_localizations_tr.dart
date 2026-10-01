@@ -277,4 +277,18 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get historyAllSensors => 'Tümü';
+
+  @override
+  String get vibrationLastRms => 'Son titreşim RMS';
+
+  @override
+  String get vibrationIntervalPeak => 'Aralık tepe değeri';
+
+  @override
+  String get vibrationSaturationWarning =>
+      'Ölçüm sınırına ulaşıldı. Tepe değeri hareketin tamamını yansıtmayabilir.';
+
+  @override
+  String get vibrationSamplingWarning =>
+      'Örnekleme kesintisi veya okuma hatası var. Değerler yalnızca geçerli pencereleri kapsıyor.';
 }

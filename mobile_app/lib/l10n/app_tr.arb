@@ -118,5 +118,9 @@
 	"historyLoadMore": "Daha fazla yükle",
 	"historyLoadMoreFailed": "Diğer kayıtlar yüklenemedi. Tekrar deneyebilirsiniz.",
 	"historySensorFilter": "Sensör",
-	"historyAllSensors": "Tümü"
+	"historyAllSensors": "Tümü",
+	"vibrationLastRms": "Son titreşim RMS",
+	"vibrationIntervalPeak": "Aralık tepe değeri",
+	"vibrationSaturationWarning": "Ölçüm sınırına ulaşıldı. Tepe değeri hareketin tamamını yansıtmayabilir.",
+	"vibrationSamplingWarning": "Örnekleme kesintisi veya okuma hatası var. Değerler yalnızca geçerli pencereleri kapsıyor."
 }

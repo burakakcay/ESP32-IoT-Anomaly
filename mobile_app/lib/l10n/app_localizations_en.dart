@@ -277,4 +277,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get historyAllSensors => 'All';
+
+  @override
+  String get vibrationLastRms => 'Latest vibration RMS';
+
+  @override
+  String get vibrationIntervalPeak => 'Interval peak';
+
+  @override
+  String get vibrationSaturationWarning =>
+      'Measurement limit reached. The peak may not represent the full motion.';
+
+  @override
+  String get vibrationSamplingWarning =>
+      'A sampling interruption or read error occurred. Values cover valid windows only.';
 }

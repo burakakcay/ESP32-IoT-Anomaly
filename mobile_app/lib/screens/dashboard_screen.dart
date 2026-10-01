@@ -219,8 +219,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         "${dateTime.second.toString().padLeft(2, '0')}";
   }
 
-  // Kullanıcı arayüzü
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -323,6 +321,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                 const SizedBox(height: 16),
 
+                _VibrationCards(reading: _sensorData),
+
+                const SizedBox(height: 16),
+
                 AnomalyCard(
                   anomalyResponse: _anomalyResponse,
                   latestAnomaly: _latestAnomaly,
@@ -352,5 +354,121 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void dispose() {
     _refreshTimer?.cancel();
     super.dispose();
+  }
+}
+
+class _VibrationCards extends StatelessWidget {
+  final SensorData? reading;
+
+  const _VibrationCards({required this.reading});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final cards = [
+              _VibrationValueCard(
+                title: l10n.vibrationLastRms,
+                value: reading?.lastRmsG,
+                icon: Icons.vibration,
+              ),
+              _VibrationValueCard(
+                title: l10n.vibrationIntervalPeak,
+                value: reading?.peakG,
+                icon: Icons.show_chart,
+              ),
+            ];
+
+            if (constraints.maxWidth < 500) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [cards[0], const SizedBox(height: 12), cards[1]],
+              );
+            }
+
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: cards[0]),
+                const SizedBox(width: 16),
+                Expanded(child: cards[1]),
+              ],
+            );
+          },
+        ),
+        if (reading?.vibrationSaturated == true)
+          _buildWarning(context, l10n.vibrationSaturationWarning),
+        if (reading?.vibrationSamplingError == true)
+          _buildWarning(context, l10n.vibrationSamplingWarning),
+      ],
+    );
+  }
+
+  Widget _buildWarning(BuildContext context, String message) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.warning_amber_rounded,
+            color: Theme.of(context).colorScheme.primary,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(child: Text(message)),
+        ],
+      ),
+    );
+  }
+}
+
+class _VibrationValueCard extends StatelessWidget {
+  final String title;
+  final double? value;
+  final IconData icon;
+
+  const _VibrationValueCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final measurement = value;
+    final text = measurement != null && measurement.isFinite
+        ? '${measurement.toStringAsFixed(4)} g'
+        : '—';
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(icon, color: theme.colorScheme.primary),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(title, style: theme.textTheme.titleMedium),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(text, style: theme.textTheme.headlineSmall),
+          ],
+        ),
+      ),
+    );
   }
 }

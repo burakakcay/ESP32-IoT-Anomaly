@@ -59,7 +59,7 @@ void loop()
         lastFirestoreSend = millis();
 
         startedUs = micros();
-        const SensorReading reading = readSensorData();
+        SensorReading reading = readSensorData();
         logSlowOperation("Sensor okuma ve ozet", startedUs);
 
         if (!reading.hasValidMotion)
@@ -79,6 +79,8 @@ void loop()
                 "Zaman bilgisi yok; gonderim atlandi.");
             return;
         }
+
+        collectVibrationForUpload(reading);
 
         startedUs = micros();
         sendReadingToFirestore(reading, deviceId);

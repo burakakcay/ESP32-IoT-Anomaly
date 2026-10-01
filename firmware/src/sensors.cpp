@@ -58,6 +58,45 @@ namespace
     QueueHandle_t motionQueue = nullptr;
     QueueHandle_t vibrationQueue = nullptr;
     TaskHandle_t vibrationTaskHandle = nullptr;
+    portMUX_TYPE vibrationMux = portMUX_INITIALIZER_UNLOCKED;
+
+    VibrationSummary pendingVibration{};
+    uint32_t lastVibrationWindowMs = 0;
+    uint32_t vibrationIntervalStartedMs = 0;
+    bool vibrationCollectionStarted = false;
+
+    void publishVibrationReport(const VibrationReport &report)
+    {
+        portENTER_CRITICAL(&vibrationMux);
+
+        if (report.status == VibrationStatus::Ready)
+        {
+            pendingVibration.lastRmsG = report.rms;
+            pendingVibration.hasValidLast = true;
+            lastVibrationWindowMs = millis();
+
+            if (!pendingVibration.hasValidPeak ||
+                report.peak > pendingVibration.peakG)
+            {
+                pendingVibration.peakG = report.peak;
+            }
+
+            pendingVibration.hasValidPeak = true;
+            ++pendingVibration.validWindowCount;
+        }
+        else if (report.status == VibrationStatus::Saturation)
+        {
+            pendingVibration.hadSaturation = true;
+        }
+        else
+        {
+            pendingVibration.hadSamplingError = true;
+        }
+
+        portEXIT_CRITICAL(&vibrationMux);
+
+        xQueueOverwrite(vibrationQueue, &report);
+    }
 
     void vibrationTask(void *)
     {
@@ -73,6 +112,15 @@ namespace
         uint32_t sequence = 0;
         TickType_t wakeTime = xTaskGetTickCount();
 
+        portENTER_CRITICAL(&vibrationMux);
+
+        pendingVibration = VibrationSummary();
+        vibrationIntervalStartedMs = millis();
+        lastVibrationWindowMs = 0;
+        vibrationCollectionStarted = true;
+
+        portEXIT_CRITICAL(&vibrationMux);
+
         for (;;)
         {
             const uint32_t now = micros();
@@ -86,7 +134,7 @@ namespace
                 count = 0;
                 report.status = VibrationStatus::Gap;
                 report.maxGapMs = gap / 1000.0f;
-                xQueueOverwrite(vibrationQueue, &report);
+                publishVibrationReport(report);
             }
 
             uint8_t raw[14] = {};
@@ -106,8 +154,7 @@ namespace
                 xQueueOverwrite(motionQueue, &motion);
 
                 report.status = VibrationStatus::ReadError;
-                xQueueOverwrite(vibrationQueue, &report);
-
+                publishVibrationReport(report);
                 vTaskDelay(pdMS_TO_TICKS(1000));
                 wakeTime = xTaskGetTickCount();
                 continue;
@@ -139,7 +186,7 @@ namespace
             {
                 count = 0;
                 report.status = VibrationStatus::Saturation;
-                xQueueOverwrite(vibrationQueue, &report);
+                publishVibrationReport(report);
             }
             else
             {
@@ -194,7 +241,7 @@ namespace
                     report.maxGapMs = maxGapUs / 1000.0f;
                     report.sequence = ++sequence;
 
-                    xQueueOverwrite(vibrationQueue, &report);
+                    publishVibrationReport(report);
                     count = 0;
                 }
             }
@@ -396,9 +443,8 @@ void updateVibrationSampling()
         SentinelLog::write(
             SentinelLog::Level::Debug,
             "TITRESIM",
-            "Pencere:%lu | RMS:%.4fg | Tepe:%.4fg | "
+            "RMS:%.4fg | Tepe:%.4fg | "
             "Ornek:200 | Sure:%.2fs | MaksAralik:%.1fms",
-            static_cast<unsigned long>(report.sequence),
             report.rms,
             report.peak,
             report.durationSeconds,
@@ -439,6 +485,41 @@ void updateVibrationSampling()
             "TITRESIM",
             "Ivme aralik sinirina ulasti; pencere iptal edildi.");
     }
+}
+
+void collectVibrationForUpload(SensorReading &reading)
+{
+    constexpr uint32_t MAX_LAST_WINDOW_AGE_MS = 3000;
+
+    reading.vibration = VibrationSummary{};
+
+    portENTER_CRITICAL(&vibrationMux);
+
+    if (vibrationCollectionStarted)
+    {
+        const uint32_t now = millis();
+
+        reading.vibration = pendingVibration;
+        reading.vibration.intervalMs =
+            now - vibrationIntervalStartedMs;
+
+        if (reading.vibration.hasValidLast)
+        {
+            reading.vibration.lastWindowAgeMs =
+                now - lastVibrationWindowMs;
+
+            if (reading.vibration.lastWindowAgeMs >
+                MAX_LAST_WINDOW_AGE_MS)
+            {
+                reading.vibration.hasValidLast = false;
+            }
+        }
+
+        pendingVibration = VibrationSummary{};
+        vibrationIntervalStartedMs = now;
+    }
+
+    portEXIT_CRITICAL(&vibrationMux);
 }
 
 SensorReading readSensorData()

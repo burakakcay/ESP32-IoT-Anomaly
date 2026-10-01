@@ -601,6 +601,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'All'**
   String get historyAllSensors;
+
+  /// No description provided for @vibrationLastRms.
+  ///
+  /// In en, this message translates to:
+  /// **'Latest vibration RMS'**
+  String get vibrationLastRms;
+
+  /// No description provided for @vibrationIntervalPeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Interval peak'**
+  String get vibrationIntervalPeak;
+
+  /// No description provided for @vibrationSaturationWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Measurement limit reached. The peak may not represent the full motion.'**
+  String get vibrationSaturationWarning;
+
+  /// No description provided for @vibrationSamplingWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'A sampling interruption or read error occurred. Values cover valid windows only.'**
+  String get vibrationSamplingWarning;
 }
 
 class _AppLocalizationsDelegate
