@@ -526,8 +526,27 @@ SensorReading readSensorData()
 {
     SensorReading reading{};
 
+    // reading.temperature = dht.readTemperature();
+    // reading.humidity = dht.readHumidity();,
+
+    const uint32_t dhtStartedUs = micros();
+
     reading.temperature = dht.readTemperature();
     reading.humidity = dht.readHumidity();
+
+    const uint32_t dhtElapsedUs = micros() - dhtStartedUs;
+    const bool dhtValid =
+        isfinite(reading.temperature) &&
+        isfinite(reading.humidity);
+
+    SentinelLog::write(
+        dhtValid
+            ? SentinelLog::Level::Debug
+            : SentinelLog::Level::Warning,
+        "DHT",
+        "Okuma: %.1f ms | %s",
+        dhtElapsedUs / 1000.0,
+        dhtValid ? "Gecerli" : "Gecersiz");
 
     MotionSnapshot motion{};
 

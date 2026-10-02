@@ -53,7 +53,7 @@ void loop()
 
     if (
         isWifiConnected() &&
-        isFirebaseReady() &&
+        canAcceptFirestoreReading() &&
         millis() - lastFirestoreSend >= FIRESTORE_INTERVAL)
     {
         lastFirestoreSend = millis();

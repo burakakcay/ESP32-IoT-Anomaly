@@ -2,6 +2,8 @@
 
 #include "sensors.h"
 
+bool canAcceptFirestoreReading();
+
 void initializeFirebaseService();
 
 void updateFirebaseService();

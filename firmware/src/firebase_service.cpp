@@ -6,10 +6,17 @@
 #include <Arduino.h>
 #include <FirebaseClient.h>
 #include <math.h>
+#include <esp_system.h>
 
 #include "ExampleFunctions.h"
 #include "secrets.h"
 #include "firebase_service.h"
+
+static void uploadReadingDocument(
+    const SensorReading &reading,
+    const char *deviceId,
+    const String &documentId,
+    const String &taskUid);
 
 namespace
 {
@@ -32,24 +39,129 @@ namespace
     bool firebaseServiceInitialized = false;
     bool firebaseAuthenticationLogged = false;
 
+    constexpr uint32_t INITIAL_RETRY_DELAY_MS = 5000;
+    constexpr uint32_t MAX_RETRY_DELAY_MS = 60000;
+    constexpr uint32_t UPLOAD_TIMEOUT_MS = 60000;
+
+    struct PendingReading
+    {
+        SensorReading reading{};
+        String deviceId;
+        String documentId;
+        String taskUid;
+
+        bool occupied = false;
+        bool inFlight = false;
+        bool retryScheduled = false;
+
+        uint32_t lastFailureMs = 0;
+        uint32_t attemptStartedMs = 0;
+        uint32_t retryDelayMs = INITIAL_RETRY_DELAY_MS;
+        uint32_t attempt = 0;
+    };
+
+    PendingReading pendingReading;
+
+    void startPendingUpload()
+    {
+        if (!pendingReading.occupied || pendingReading.inFlight || !app.ready())
+        {
+            return;
+        }
+
+        ++pendingReading.attempt;
+        pendingReading.taskUid = pendingReading.documentId + "-" + String(pendingReading.attempt);
+
+        pendingReading.inFlight = true;
+        pendingReading.retryScheduled = false;
+
+        pendingReading.attemptStartedMs = millis();
+
+        SentinelLog::write(
+            SentinelLog::Level::Debug,
+            "FIRESTORE",
+            "Göndeirm denemesi: %lu",
+            static_cast<unsigned long>(pendingReading.attempt));
+
+        uploadReadingDocument(
+            pendingReading.reading,
+            pendingReading.deviceId.c_str(),
+            pendingReading.documentId,
+            pendingReading.taskUid);
+    }
+
     void processFirestoreResult(AsyncResult &aResult)
     {
         if (!aResult.isResult())
             return;
 
+        if (!pendingReading.occupied ||
+            !pendingReading.inFlight ||
+            aResult.uid() != pendingReading.taskUid)
+        {
+            if (aResult.available())
+                (void)aResult.c_str();
+
+            return;
+        }
+
         if (aResult.isError())
         {
-            SentinelLog::write(SentinelLog::Level::Error, "FIRESTORE",
-                               "Kod %d: %s",
-                               aResult.error().code(),
-                               aResult.error().message().c_str());
+            const int code = aResult.error().code();
+
+            // Aynı kimlikle önceki denemede oluşturulmuş olabilir.
+            if (code == 409)
+            {
+                if (aResult.available())
+                    (void)aResult.c_str();
+
+                pendingReading = PendingReading{};
+
+                SentinelLog::write(
+                    SentinelLog::Level::Debug,
+                    "FIRESTORE", "Kayıt zaten mevcut; gönderim tamamlandı.");
+
+                return;
+            }
+
+            // ilk hata 5 sn; sonraki hatalar 10, 20, 40, 60 sn
+            if (pendingReading.attempt > 1)
+            {
+                const uint32_t doubled = pendingReading.retryDelayMs * 2;
+
+                pendingReading.retryDelayMs =
+                    doubled > MAX_RETRY_DELAY_MS
+                        ? MAX_RETRY_DELAY_MS
+                        : doubled;
+            }
+
+            pendingReading.inFlight = false;
+            pendingReading.retryScheduled = true;
+            pendingReading.lastFailureMs = millis();
+
+            SentinelLog::write(
+                SentinelLog::Level::Warning,
+                "FIRESTORE",
+                "Kod %d: %s | Kayıt korundu; %lu sn sonra tekrar.",
+                code,
+                aResult.error().message().c_str(),
+                static_cast<unsigned long>(pendingReading.retryDelayMs / 1000));
+
+            if (aResult.available())
+                (void)aResult.c_str();
+
             return;
         }
 
         if (aResult.available())
         {
             (void)aResult.c_str();
-            SentinelLog::write(SentinelLog::Level::Debug, "FIRESTORE", "Kaydedildi.");
+            pendingReading = PendingReading{};
+
+            SentinelLog::write(
+                SentinelLog::Level::Debug,
+                "FIRESTORE",
+                "Kaydedildi.");
         }
     }
 
@@ -96,11 +208,56 @@ void updateFirebaseService()
 
     app.loop();
 
+    if (pendingReading.occupied &&
+        pendingReading.inFlight &&
+        millis() - pendingReading.attemptStartedMs >= UPLOAD_TIMEOUT_MS)
+    {
+        // Önce durum değişsin; iptal edilen isteğin geç gelen
+        // callback'i mevcut kaydı tamamlanmış saymasın.
+        pendingReading.inFlight = false;
+        pendingReading.retryScheduled = true;
+        pendingReading.lastFailureMs = millis();
+
+        if (pendingReading.attempt > 1)
+        {
+            const uint32_t doubled = pendingReading.retryDelayMs * 2;
+
+            pendingReading.retryDelayMs = doubled > MAX_RETRY_DELAY_MS
+                                              ? MAX_RETRY_DELAY_MS
+                                              : doubled;
+        }
+
+        // Yalnızca bu gönderim denemesini iptal et.
+        asyncClient.stopAsync(pendingReading.taskUid);
+
+        SentinelLog::write(
+            SentinelLog::Level::Warning,
+            "FIRESTORE",
+            "Gonderim zaman asimina ugradi; kayit korundu. "
+            "%lu sn sonra Firebase hazirsa tekrar denenecek.",
+            static_cast<unsigned long>(
+                pendingReading.retryDelayMs / 1000));
+    }
+
     if (app.ready() && !firebaseAuthenticationLogged)
     {
         firebaseAuthenticationLogged = true;
 
         SentinelLog::write(SentinelLog::Level::Info, "FIREBASE", "Oturum açıldı.");
+    }
+
+    if (app.ready() &&
+        pendingReading.occupied &&
+        !pendingReading.inFlight &&
+        pendingReading.retryScheduled &&
+        millis() - pendingReading.lastFailureMs >=
+            pendingReading.retryDelayMs)
+    {
+        // Önceki isteğin kütüphanede kalan görevini iptal et.
+        // Kimlik yalnızca o gönderim denemesine ait.
+
+        asyncClient.stopAsync(pendingReading.taskUid);
+        startPendingUpload();
     }
 }
 
@@ -109,9 +266,11 @@ bool isFirebaseReady()
     return firebaseServiceInitialized && app.ready();
 }
 
-void sendReadingToFirestore(
+void uploadReadingDocument(
     const SensorReading &reading,
-    const char *deviceId)
+    const char *deviceId,
+    const String &documentId,
+    const String &taskUid)
 {
 
     if (!reading.hasValidTime)
@@ -232,8 +391,57 @@ void sendReadingToFirestore(
         asyncClient,
         Firestore::Parent(FIREBASE_PROJECT_ID),
         documentPath,
+        documentId,
         DocumentMask(),
         doc,
         processFirestoreResult,
-        "sensorDataTask");
+        taskUid);
+}
+
+bool canAcceptFirestoreReading()
+{
+    return isFirebaseReady() && !pendingReading.occupied;
+}
+
+void sendReadingToFirestore(
+    const SensorReading &reading,
+    const char *deviceId)
+{
+    if (pendingReading.occupied)
+    {
+        SentinelLog::write(
+            SentinelLog::Level::Warning,
+            "FIRESTORE",
+            "Önceki kayıt bekleniyor; yeni kayıt kabul edilmedi.");
+
+        return;
+    }
+
+    if (!reading.hasValidTime || !reading.hasValidMotion)
+    {
+        SentinelLog::write(
+            SentinelLog::Level::Error,
+            "FIRESTORE",
+            "Ölçüm veya zaman geçersiz; kayıt kabul edilmedi.");
+
+        return;
+    }
+
+    char id[48];
+    snprintf(
+        id,
+        sizeof(id),
+        "%08lx-%08lx-%08lx-%08lx",
+        static_cast<unsigned long>(esp_random()),
+        static_cast<unsigned long>(esp_random()),
+        static_cast<unsigned long>(esp_random()),
+        static_cast<unsigned long>(esp_random()));
+
+    pendingReading = PendingReading{};
+    pendingReading.reading = reading;
+    pendingReading.deviceId = deviceId;
+    pendingReading.documentId = id;
+    pendingReading.occupied = true;
+
+    startPendingUpload();
 }
