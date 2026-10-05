@@ -9,4 +9,6 @@ module.exports = {
 
   anomalyCacheDuration: 10_000,
   aiCacheDuration: 60_000,
+
+  readingsSource: process.env.READINGS_SOURCE || "firestore",
 };

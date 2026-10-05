@@ -1,6 +1,10 @@
 require("dotenv").config();
 const config = require("./config/app_config");
 
+if (!["firestore", "sqlite"].includes(config.readingsSource)) {
+  throw new Error("READINGS_SOURCE firestore veya sqlite olmalıdır.");
+}
+
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getFirestore } = require("firebase-admin/firestore");
 const { GoogleGenAI } = require("@google/genai");
@@ -34,6 +38,18 @@ const {
   getAnomalyHistory: fetchAnomalyHistory,
 } = require("./repositories/anomalies.repository");
 
+const { openDatabase } = require("./database/sqlite");
+
+const {
+  createSQLiteReadingsRepository,
+} = require("./repositories/sqlite_readings.repository");
+
+const { createDeviceAuth } = require("./middleware/device_auth.middleware");
+
+const {
+  createReadingIngestRouter,
+} = require("./routes/readings_ingest.routes");
+
 initializeApp({ credential: cert(serviceAccount) });
 
 const db = getFirestore();
@@ -43,6 +59,23 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
+const sqliteDb = openDatabase();
+
+const sqliteReadingsRepository = createSQLiteReadingsRepository(sqliteDb);
+
+const requireDeviceAuth = createDeviceAuth({
+  deviceId: DEVICE_ID,
+  apiKey: process.env.DEVICE_API_KEY,
+});
+
+app.use(
+  "/api/readings",
+  createReadingIngestRouter({
+    requireDeviceAuth,
+    repository: sqliteReadingsRepository,
+  }),
+);
+
 app.use("/api", requireAuth);
 
 const gemini = process.env.GEMINI_API_KEY
@@ -50,10 +83,16 @@ const gemini = process.env.GEMINI_API_KEY
   : null;
 
 async function getReadings(limit = READING_LIMIT) {
+  if (config.readingsSource === "sqlite") {
+    return sqliteReadingsRepository.getReadings(DEVICE_ID, limit);
+  }
   return fetchReadings(db, DEVICE_ID, limit);
 }
 
 async function getLatestReading() {
+  if (config.readingsSource === "sqlite") {
+    return sqliteReadingsRepository.getLatestReading(DEVICE_ID);
+  }
   return fetchLatestReadings(db, DEVICE_ID);
 }
 

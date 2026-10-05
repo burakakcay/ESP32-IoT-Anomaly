@@ -7,7 +7,7 @@ function createReadingsRouter({ getReadings, getLatestReading }) {
     try {
       res.json(await getReadings());
     } catch (error) {
-      console.error("Firestore okuma hatası:", error);
+      console.error("Ölçüm okuma hatası:", error);
       res.status(500).json({ error: "Sensör verileri alınamadı." });
     }
   });

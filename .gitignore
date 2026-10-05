@@ -12,6 +12,7 @@ backend/.env
 backend/serviceAccountKey.json
 backend/node_modules/
 backend/**/*.log
+backend/data
 
 # Flutter miscellaneous
 mobile_app/**/*.class
