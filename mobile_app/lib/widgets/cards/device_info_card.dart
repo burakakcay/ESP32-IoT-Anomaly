@@ -95,7 +95,9 @@ class DeviceInfoCard extends StatelessWidget {
             Text(
               lastUpdate == null
                   ? '--'
-                  : DateFormat('dd.MM.yyyy HH:mm').format(lastUpdate!),
+                  : DateFormat(
+                      'dd.MM.yyyy HH:mm',
+                    ).format(lastUpdate!.toLocal()),
               style: const TextStyle(fontSize: 13),
             ),
           ],

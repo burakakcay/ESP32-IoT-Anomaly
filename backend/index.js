@@ -96,6 +96,30 @@ async function getLatestReading() {
   return fetchLatestReadings(db, DEVICE_ID);
 }
 
+async function getReadingsInRange(fromMs, toMs) {
+  if (config.readingsSource !== "sqlite") {
+    const error = new Error(
+      "Tarih aralığı sorgusu için SQLite kaynağı seçilmelidir.",
+    );
+    error.statusCode = 503;
+    throw error;
+  }
+
+  const readings = sqliteReadingsRepository.getReadingsInRange(
+    DEVICE_ID,
+    fromMs,
+    toMs,
+  );
+
+  return {
+    device_id: DEVICE_ID,
+    from_ms: fromMs,
+    to_ms: toMs,
+    returnedCount: readings.length,
+    readings,
+  };
+}
+
 async function getAnomalyHistory(options = {}) {
   const { results, nextCursor } = await fetchAnomalyHistory(
     db,
@@ -126,7 +150,7 @@ const { getAIResponse } = createAIResponseService({
 
 app.use(
   "/api/readings",
-  createReadingsRouter({ getReadings, getLatestReading }),
+  createReadingsRouter({ getReadings, getLatestReading, getReadingsInRange }),
 );
 
 app.use("/api/dashboard", createDashboardRouter({ getDashboardResponse }));

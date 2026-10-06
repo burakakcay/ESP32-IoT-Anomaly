@@ -1,6 +1,3 @@
-#include "logger.h"
-#include "sensors.h"
-
 #include <Wire.h>
 #include <DHT.h>
 #include <MPU6050.h>
@@ -9,6 +6,10 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/queue.h>
+#include <sys/time.h>
+
+#include "logger.h"
+#include "sensors.h"
 
 namespace
 {
@@ -579,9 +580,27 @@ SensorReading readSensorData()
 
     const float accelMagnitude = sqrtf(ax * ax + ay * ay + az * az);
 
-    struct tm localTime;
+    struct timeval capturedTime{};
+    struct tm utcTime{};
 
-    if (!getLocalTime(&localTime))
+    // 1 Ocak 2024:saat henüz ayarlanmamışsa ölçümü göstermeyelim.
+    constexpr time_t MIN_VALID_TIME = 1704067200;
+
+    if (gettimeofday(&capturedTime, nullptr) != 0 ||
+        capturedTime.tv_sec < MIN_VALID_TIME ||
+        gmtime_r(&capturedTime.tv_sec, &utcTime) == nullptr)
+    {
+        reading.hasValidTime = false;
+        return reading;
+    }
+
+    char utcSeconds[24];
+
+    if (strftime(
+            utcSeconds,
+            sizeof(utcSeconds),
+            "%Y-%m-%dT%H:%M:%S",
+            &utcTime) == 0)
     {
         reading.hasValidTime = false;
         return reading;
@@ -589,11 +608,12 @@ SensorReading readSensorData()
 
     char isoTime[32];
 
-    strftime(
+    sniprintf(
         isoTime,
         sizeof(isoTime),
-        "%Y-%m-%dT%H:%M:%S",
-        &localTime);
+        "%s.%03ldZ",
+        utcSeconds,
+        static_cast<long>(capturedTime.tv_usec / 1000));
 
     reading.timestamp = String(isoTime);
     reading.hasValidTime = true;

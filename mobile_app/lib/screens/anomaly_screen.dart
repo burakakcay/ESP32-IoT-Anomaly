@@ -149,7 +149,7 @@ class _AnomalyScreenState extends State<AnomalyScreen> {
 }
 
 String _formatTimestamp(String timestamp) {
-  final dateTime = DateTime.tryParse(timestamp);
+  final dateTime = DateTime.tryParse(timestamp)?.toLocal();
 
   if (dateTime == null) {
     return timestamp;

@@ -65,6 +65,50 @@ class ApiService {
     return SensorData.fromFirestoreJson(jsonData);
   }
 
+  static Future<List<SensorData>> getReadingsInRange({
+    required DateTime from,
+    required DateTime to,
+  }) async {
+    if (!from.isBefore(to)) {
+      throw ArgumentError('Başlangıç zamanı bitişten önce olmalıdır.');
+    }
+
+    final path = Uri(
+      path: '/api/readings/history',
+      queryParameters: {
+        'fromMs': from.millisecondsSinceEpoch.toString(),
+        'toMs': to.millisecondsSinceEpoch.toString(),
+      },
+    ).toString();
+
+    final response = await _get(path);
+
+    if (response.statusCode != 200) {
+      String message = 'Ölçüm geçmişi alınamadı: ${response.statusCode}';
+
+      try {
+        final body = jsonDecode(response.body);
+        if (body is Map<String, dynamic> && body['error'] is String) {
+          message = body['error'] as String;
+        }
+      } on FormatException {
+        message =
+            'Sunucu geçerli bir JSON yanıtı döndürmedi: '
+            '${response.statusCode}';
+      }
+
+      throw Exception(message);
+    }
+    final jsonData = jsonDecode(response.body) as Map<String, dynamic>;
+    final readingsJson = jsonData['readings'] as List<dynamic>;
+
+    return readingsJson
+        .map(
+          (item) => SensorData.fromFirestoreJson(item as Map<String, dynamic>),
+        )
+        .toList();
+  }
+
   static Future<AnomalyResponse> getAnomalies() async {
     final response = await _get('/api/anomalies');
 

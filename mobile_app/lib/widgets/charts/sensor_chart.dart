@@ -128,7 +128,7 @@ class SensorChart extends StatelessWidget {
 
                         return touchedSpots.asMap().entries.map((entry) {
                           final spot = entry.value;
-                          final time = timestamps[spot.spotIndex];
+                          final time = timestamps[spot.spotIndex].toLocal();
 
                           final formattedTime =
                               "${time.hour.toString().padLeft(2, '0')}:"
@@ -227,7 +227,7 @@ class SensorChart extends StatelessWidget {
                             return const SizedBox.shrink();
                           }
 
-                          final time = timestamps[index];
+                          final time = timestamps[index].toLocal();
 
                           return Text(
                             "${time.hour.toString().padLeft(2, '0')}:"

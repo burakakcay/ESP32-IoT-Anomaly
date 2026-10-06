@@ -4,15 +4,15 @@
 
 #include "sensors.h"
 #include "network_service.h"
-#include "firebase_service.h"
+#include "api_service.h"
 
 const char deviceId[] = "ESP32_Sensor_Node_001";
 
-// Firestore gönderimi ile Wi-Fi yeniden bağlanma zamanlarını tutar.
-unsigned long lastFirestoreSend = 0;
+// Son ölçüm hazırlama denemesinin zamanı.
+unsigned long lastApiReading = 0;
 
-// Firestore kotasını korumak için sensör verilerini 15 saniyede bir gönderir.
-const unsigned long FIRESTORE_INTERVAL = 15000;
+// İlk bağlantı denemelerinde 15 saniyelik aralık kullanıyoruz.
+const unsigned long API_INTERVAL = 15000;
 
 void logSlowOperation(const char *operation, uint32_t startedUs)
 {
@@ -34,7 +34,6 @@ void setup()
     Serial.begin(115200);
     initializeSensors();
     initializeNetworkService(deviceId);
-    initializeFirebaseService();
 }
 
 void loop()
@@ -44,19 +43,19 @@ void loop()
     logSlowOperation("Ag islemleri", startedUs);
 
     startedUs = micros();
-    updateFirebaseService();
-    logSlowOperation("Firebase islemleri", startedUs);
+    updateApiService();
+    logSlowOperation("API gönderim islemleri", startedUs);
 
     startedUs = micros();
     updateVibrationSampling();
-    logSlowOperation("Titresim islemleri", startedUs);
+    logSlowOperation("Titreşim işlemleri", startedUs);
 
     if (
         isWifiConnected() &&
-        canAcceptFirestoreReading() &&
-        millis() - lastFirestoreSend >= FIRESTORE_INTERVAL)
+        canAcceptApiReading() &&
+        millis() - lastApiReading >= API_INTERVAL)
     {
-        lastFirestoreSend = millis();
+        lastApiReading = millis();
 
         startedUs = micros();
         SensorReading reading = readSensorData();
@@ -83,7 +82,14 @@ void loop()
         collectVibrationForUpload(reading);
 
         startedUs = micros();
-        sendReadingToFirestore(reading, deviceId);
-        logSlowOperation("Firestore gonderim cagrisi", startedUs);
+        const bool accepted = sendReadingToApi(reading, deviceId);
+        logSlowOperation("API kayıt hazırlama", startedUs);
+        if (!accepted)
+        {
+            SentinelLog::write(
+                SentinelLog::Level::Error,
+                "API",
+                "Ölçüm gönderim için kabul edilmedi.");
+        }
     }
 }

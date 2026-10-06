@@ -134,7 +134,7 @@ class VibrationDetailScreen extends StatelessWidget {
                               );
 
                               return LineTooltipItem(
-                                '${dateFormat.format(time)}\n'
+                                '${dateFormat.format(time.toLocal())}\n'
                                 '${labels[spot.barIndex]}\n'
                                 '${spot.y.toStringAsFixed(4)} g',
                                 TextStyle(
@@ -173,8 +173,8 @@ class VibrationDetailScreen extends StatelessWidget {
                   spacing: 16,
                   runSpacing: 8,
                   children: [
-                    Text(dateFormat.format(origin)),
-                    Text(dateFormat.format(readings.last.timestamp)),
+                    Text(dateFormat.format(origin.toLocal())),
+                    Text(dateFormat.format(readings.last.timestamp.toLocal())),
                   ],
                 ),
                 if (readings.any((r) => r.vibrationSaturated == true))

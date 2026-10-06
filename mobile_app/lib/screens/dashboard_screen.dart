@@ -206,7 +206,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       return null;
     }
 
-    final dateTime = DateTime.tryParse(anomaly.timestamp);
+    final dateTime = DateTime.tryParse(anomaly.timestamp)?.toLocal();
 
     if (dateTime == null) {
       return anomaly.timestamp;

@@ -27,6 +27,16 @@ function createSQLiteReadingsRepository(db) {
     LIMIT ?
   `);
 
+  const listReadingsInRange = db.prepare(`
+    SELECT reading_id, payload_json
+    FROM readings
+    WHERE device_id = ?
+      AND measured_at_ms >= ?
+      AND measured_at_ms < ?
+    ORDER BY measured_at_ms ASC, reading_id ASC
+    LIMIT 10001
+  `);
+
   function saveReading({ deviceId, readingId, measuredAtMs, payload }) {
     const result = insertReading.run(
       deviceId,
@@ -67,7 +77,38 @@ function createSQLiteReadingsRepository(db) {
     return getReadings(deviceId, 1)[0] ?? null;
   }
 
-  return { saveReading, getReadings, getLatestReading };
+  function getReadingsInRange(deviceId, fromMs, toMs) {
+    const validTime = (value) =>
+      Number.isSafeInteger(value) && value >= 0 && value <= 8640000000000000;
+
+    if (!validTime(fromMs) || !validTime(toMs) || fromMs >= toMs) {
+      const error = new RangeError("Geçerli bir tarih aralığı seçilmelidir.");
+      error.statusCode = 400;
+      throw error;
+    }
+
+    const rows = listReadingsInRange.all(deviceId, fromMs, toMs);
+
+    if (rows.length > 10000) {
+      const error = new RangeError(
+        "Bu aralıkta çok fazla ölçüm bulundu. Daha kısa bir aralık seçin.",
+      );
+      error.statusCode = 422;
+      throw error;
+    }
+
+    return rows.map((row) => ({
+      ...JSON.parse(row.payload_json),
+      id: row.reading_id,
+    }));
+  }
+
+  return {
+    saveReading,
+    getReadings,
+    getLatestReading,
+    getReadingsInRange,
+  };
 }
 
 module.exports = {

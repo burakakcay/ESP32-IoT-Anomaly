@@ -34,7 +34,7 @@ class DevicesScreen extends StatelessWidget {
                     ? l10n.connected
                     : l10n.deviceStale;
 
-                final lastUpdate = device.lastUpdate;
+                final lastUpdate = device.lastUpdate?.toLocal();
                 final formattedTime = lastUpdate == null
                     ? '--'
                     : '${MaterialLocalizations.of(context).formatShortDate(lastUpdate)} '
