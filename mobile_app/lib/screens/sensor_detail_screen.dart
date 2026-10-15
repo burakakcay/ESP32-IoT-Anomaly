@@ -26,6 +26,10 @@ class _SensorDetailScreenState extends State<SensorDetailScreen> {
 
   late DateTime _from;
   late DateTime _to;
+  DateTime? _appliedFrom;
+  DateTime? _appliedTo;
+  DateTime? _chartFrom;
+  DateTime? _chartTo;
 
   List<SensorData> _filteredReadings = [];
   bool _isLoading = false;
@@ -66,6 +70,10 @@ class _SensorDetailScreenState extends State<SensorDetailScreen> {
       setState(() {
         _filteredReadings = readings;
         _hasAppliedFilter = true;
+        _appliedFrom = from;
+        _appliedTo = to;
+        _chartFrom = from;
+        _chartTo = to;
       });
     } catch (error) {
       if (!mounted) return;
@@ -80,6 +88,49 @@ class _SensorDetailScreenState extends State<SensorDetailScreen> {
         });
       }
     }
+  }
+
+  void _changeChartView({double zoomFactor = 1, double shiftFraction = 0}) {
+    if (_appliedFrom == null ||
+        _appliedTo == null ||
+        _chartFrom == null ||
+        _chartTo == null) {
+      return;
+    }
+
+    final totalMs = _appliedTo!.difference(_appliedFrom!).inMilliseconds;
+
+    final currentMs = _chartTo!.difference(_chartFrom!).inMilliseconds;
+
+    // En fazla bir dakikalık pencereye kadar yaklaş.
+    final minimumMs = totalMs < 60000 ? totalMs : 60000;
+
+    final newMs = (currentMs * zoomFactor)
+        .round()
+        .clamp(minimumMs, totalMs)
+        .toInt();
+
+    final currentOffset = _chartFrom!.difference(_appliedFrom!).inMilliseconds;
+
+    // Yakınlaştırırken merkezi koru; oklarla pencereyi kaydır.
+    final newOffset =
+        (currentOffset + (currentMs - newMs) / 2 + currentMs * shiftFraction)
+            .round()
+            .clamp(0, totalMs - newMs)
+            .toInt();
+
+    setState(() {
+      _chartFrom = _appliedFrom!.add(Duration(milliseconds: newOffset));
+
+      _chartTo = _chartFrom!.add(Duration(milliseconds: newMs));
+    });
+  }
+
+  void _resetChartView() {
+    setState(() {
+      _chartFrom = _appliedFrom;
+      _chartTo = _appliedTo;
+    });
   }
 
   Future<void> _pickDateTime({required bool isStart}) async {
@@ -339,10 +390,55 @@ class _SensorDetailScreenState extends State<SensorDetailScreen> {
 
             const SizedBox(height: 16),
 
+            if (useFilteredData) ...[
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 8,
+                children: [
+                  IconButton(
+                    tooltip: "Önceki saatlere kaydır.",
+                    onPressed: _isLoading
+                        ? null
+                        : () => _changeChartView(shiftFraction: -0.25),
+                    icon: const Icon(Icons.chevron_left),
+                  ),
+                  IconButton(
+                    tooltip: "Uzaklaştır",
+                    onPressed: _isLoading
+                        ? null
+                        : () => _changeChartView(zoomFactor: 2),
+                    icon: const Icon(Icons.remove),
+                  ),
+                  OutlinedButton(
+                    onPressed: _isLoading ? null : _resetChartView,
+                    child: const Text('Sıfırla'),
+                  ),
+                  IconButton(
+                    tooltip: 'Yakınlaştır',
+                    onPressed: _isLoading
+                        ? null
+                        : () => _changeChartView(zoomFactor: 0.5),
+                    icon: const Icon(Icons.add),
+                  ),
+                  IconButton(
+                    tooltip: 'Sonraki saatlere kaydır',
+                    onPressed: _isLoading
+                        ? null
+                        : () => _changeChartView(shiftFraction: 0.25),
+                    icon: const Icon(Icons.chevron_right),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+            ],
+
             SensorChart(
               sensorType: sensorType,
               values: chartValues,
               timestamps: chartTimestamps,
+              rangeStart: useFilteredData ? _chartFrom : null,
+              rangeEnd: useFilteredData ? _chartTo : null,
               valuesX: getChartValuesX(),
               valuesY: getChartValuesY(),
               valuesZ: getChartValuesZ(),

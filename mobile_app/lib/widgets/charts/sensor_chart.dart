@@ -9,6 +9,9 @@ class SensorChart extends StatelessWidget {
 
   final List timestamps;
 
+  final DateTime? rangeStart;
+  final DateTime? rangeEnd;
+
   final List? valuesX;
   final List? valuesY;
   final List? valuesZ;
@@ -23,6 +26,9 @@ class SensorChart extends StatelessWidget {
     required this.values,
     required this.timestamps,
 
+    this.rangeStart,
+    this.rangeEnd,
+
     this.valuesX,
     this.valuesY,
     this.valuesZ,
@@ -30,6 +36,19 @@ class SensorChart extends StatelessWidget {
     this.isAcceleration = false,
     this.isGyroscope = false,
   });
+
+  bool get _usesTimeAxis =>
+      rangeStart != null && rangeEnd != null && rangeEnd!.isAfter(rangeStart!);
+
+  double _xForTime(DateTime time) {
+    return time.difference(rangeStart!).inMilliseconds / 1000.0;
+  }
+
+  DateTime _timeForX(double x) {
+    return rangeStart!
+        .add(Duration(milliseconds: (x * 1000).round()))
+        .toLocal();
+  }
 
   List<double> _convertAccelerationToG(List values) {
     const double sensitivity = 16384.0;
@@ -73,6 +92,10 @@ class SensorChart extends StatelessWidget {
 
     final chartLength = isThreeAxis ? valuesX!.length : values.length;
 
+    final maxX = _usesTimeAxis
+        ? _xForTime(rangeEnd!)
+        : (chartLength > 1 ? chartLength - 1 : 1).toDouble();
+
     if (isThreeAxis
         ? valuesX!.isEmpty || valuesY!.isEmpty || valuesZ!.isEmpty
         : values.isEmpty) {
@@ -96,9 +119,10 @@ class SensorChart extends StatelessWidget {
               child: LineChart(
                 LineChartData(
                   minX: 0,
-                  maxX: (chartLength - 1).toDouble(),
+                  maxX: maxX,
                   minY: minY,
                   maxY: maxY,
+                  clipData: const FlClipData.all(),
 
                   gridData: FlGridData(
                     show: true,
@@ -128,7 +152,10 @@ class SensorChart extends StatelessWidget {
 
                         return touchedSpots.asMap().entries.map((entry) {
                           final spot = entry.value;
-                          final time = timestamps[spot.spotIndex].toLocal();
+                          final time = _usesTimeAxis
+                              ? _timeForX(spot.x)
+                              : (timestamps[spot.spotIndex] as DateTime)
+                                    .toLocal();
 
                           final formattedTime =
                               "${time.hour.toString().padLeft(2, '0')}:"
@@ -218,21 +245,42 @@ class SensorChart extends StatelessWidget {
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 30,
-                        interval: chartLength <= 6 ? 1 : (chartLength - 1) / 5,
+                        reservedSize: 44,
+                        interval: _usesTimeAxis
+                            ? maxX / 4
+                            : chartLength <= 6
+                            ? 1
+                            : (chartLength - 1) / 5,
                         getTitlesWidget: (value, meta) {
-                          final index = value.round();
+                          final DateTime time;
 
-                          if (index < 0 || index >= timestamps.length) {
-                            return const SizedBox.shrink();
+                          if (_usesTimeAxis) {
+                            time = _timeForX(value);
+                          } else {
+                            final index = value.round();
+
+                            if (index < 0 || index >= timestamps.length) {
+                              return const SizedBox.shrink();
+                            }
+
+                            time = (timestamps[index] as DateTime).toLocal();
                           }
 
-                          final time = timestamps[index].toLocal();
-
+                          final clock =
+                              '${time.hour.toString().padLeft(2, '0')}:'
+                              '${time.minute.toString().padLeft(2, '0')}:'
+                              '${time.second.toString().padLeft(2, '0')}';
+                          final spansDays =
+                              _usesTimeAxis &&
+                              !DateUtils.isSameDay(
+                                rangeStart!.toLocal(),
+                                rangeEnd!.toLocal(),
+                              );
                           return Text(
-                            "${time.hour.toString().padLeft(2, '0')}:"
-                            "${time.minute.toString().padLeft(2, '0')}:"
-                            "${time.second.toString().padLeft(2, '0')}",
+                            spansDays
+                                ? '${time.day}/${time.month}\n$clock'
+                                : clock,
+                            textAlign: TextAlign.center,
                             style: const TextStyle(fontSize: 9),
                           );
                         },
@@ -259,16 +307,65 @@ class SensorChart extends StatelessWidget {
   }
 
   LineChartBarData _buildLine(List values, [Color? color]) {
+    final spots = <FlSpot>[];
+
+    for (var index = 0; index < values.length; index++) {
+      final double x;
+
+      if (_usesTimeAxis) {
+        final time = timestamps[index] as DateTime;
+
+        if (index > 0) {
+          final previousTime = timestamps[index - 1] as DateTime;
+          final gap = time.difference(previousTime);
+
+          if (gap > const Duration(seconds: 30)) {
+            spots.add(FlSpot.nullSpot);
+          }
+        }
+
+        x = _xForTime(time);
+      } else {
+        x = index.toDouble();
+      }
+
+      spots.add(FlSpot(x, values[index].toDouble()));
+    }
+
+    final isolatedSpots = <FlSpot>{};
+
+    for (var index = 0; index < spots.length; index++) {
+      final spot = spots[index];
+
+      if (spot == FlSpot.nullSpot) continue;
+
+      final hasPrevious = index > 0 && spots[index - 1] != FlSpot.nullSpot;
+
+      final hasNext =
+          index < spots.length - 1 && spots[index + 1] != FlSpot.nullSpot;
+
+      if (!hasPrevious && !hasNext) {
+        isolatedSpots.add(spot);
+      }
+    }
+
     return LineChartBarData(
       color: color,
       barWidth: 2,
-      isCurved: true,
+      isCurved: !_usesTimeAxis,
       curveSmoothness: 0.15,
-      dotData: const FlDotData(show: false),
-      spots: List.generate(
-        values.length,
-        (index) => FlSpot(index.toDouble(), values[index].toDouble()),
+      dotData: FlDotData(
+        show: _usesTimeAxis,
+        checkToShowDot: (spot, barData) => isolatedSpots.contains(spot),
+        getDotPainter: (spot, percent, barData, index) {
+          return FlDotCirclePainter(
+            radius: 2.5,
+            color: barData.color ?? Colors.cyanAccent,
+            strokeWidth: 0,
+          );
+        },
       ),
+      spots: spots,
     );
   }
 

@@ -11,8 +11,8 @@ const char deviceId[] = "ESP32_Sensor_Node_001";
 // Son ölçüm hazırlama denemesinin zamanı.
 unsigned long lastApiReading = 0;
 
-// İlk bağlantı denemelerinde 15 saniyelik aralık kullanıyoruz.
-const unsigned long API_INTERVAL = 15000;
+// Grafik testleri için 5 saniyede bir ölçüm hazırla.
+const unsigned long API_INTERVAL = 5000;
 
 void logSlowOperation(const char *operation, uint32_t startedUs)
 {
