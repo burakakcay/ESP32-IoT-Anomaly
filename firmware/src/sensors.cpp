@@ -440,18 +440,7 @@ void updateVibrationSampling()
         return;
 
     if (report.status == VibrationStatus::Ready)
-    {
-        SentinelLog::write(
-            SentinelLog::Level::Debug,
-            "TITRESIM",
-            "RMS:%.4fg | Tepe:%.4fg | "
-            "Ornek:200 | Sure:%.2fs | MaksAralik:%.1fms",
-            report.rms,
-            report.peak,
-            report.durationSeconds,
-            report.maxGapMs);
         return;
-    }
 
     // Tekrarlayan hata/uyarıların terminali doldurmasını önle.
     static bool warningPrinted = false;
@@ -479,7 +468,7 @@ void updateVibrationSampling()
             "Ornekleme kesintisi: %.1f ms; pencere yeniden baslatildi.",
             report.maxGapMs);
     }
-    else
+    else if (report.status == VibrationStatus::Saturation)
     {
         SentinelLog::write(
             SentinelLog::Level::Warning,
@@ -566,9 +555,26 @@ SensorReading readSensorData()
     reading.accelY = motion.accel[1];
     reading.accelZ = motion.accel[2];
 
-    reading.gyroX = motion.gyro[0];
-    reading.gyroY = motion.gyro[1];
-    reading.gyroZ = motion.gyro[2];
+    auto correctedGyro = [&](int16_t raw, int axis) -> int16_t
+    {
+        if (!gyroCalibrated)
+            return raw;
+
+        const float corrected =
+            static_cast<float>(raw) -
+            gyroOffset[axis] * GYRO_LSB_PER_DPS;
+
+        // int16_t sınırları dışında dönüşüm yapılmasını önle.
+        const float bounded = fmaxf(
+            -32768.0f,
+            fminf(32767.0f, corrected));
+
+        return static_cast<int16_t>(lroundf(bounded));
+    };
+
+    reading.gyroX = correctedGyro(motion.gyro[0], 0);
+    reading.gyroY = correctedGyro(motion.gyro[1], 1);
+    reading.gyroZ = correctedGyro(motion.gyro[2], 2);
 
     const float ax = reading.accelX / ACCEL_LSB_PER_G;
     const float ay = reading.accelY / ACCEL_LSB_PER_G;
@@ -635,9 +641,9 @@ SensorReading readSensorData()
                        humidityText.c_str(),
                        ax, ay, az,
                        accelMagnitude,
-                       gyroCalibrated ? gx - gyroOffset[0] : gx,
-                       gyroCalibrated ? gy - gyroOffset[1] : gy,
-                       gyroCalibrated ? gz - gyroOffset[2] : gz,
+                       gx,
+                       gy,
+                       gz,
                        gyroCalibrated ? "Düzeltilmiş." : "Kalibrasyon yok.");
 
     return reading;

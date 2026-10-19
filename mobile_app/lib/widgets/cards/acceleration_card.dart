@@ -68,11 +68,15 @@ class AccelerationCard extends StatelessWidget {
   }
 
   Widget _buildAxisRow(String axis, int? value) {
+    final formatted = value == null
+        ? '--'
+        : '${(value / 16384.0).toStringAsFixed(2)} g';
+
     return Row(
       children: [
         Text(axis, style: const TextStyle(fontWeight: FontWeight.bold)),
         const Spacer(),
-        Text(value?.toString() ?? "--"),
+        Text(formatted),
       ],
     );
   }

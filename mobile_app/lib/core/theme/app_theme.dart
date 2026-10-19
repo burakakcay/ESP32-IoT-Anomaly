@@ -37,6 +37,31 @@ class AppTheme {
         elevation: 3,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
+
+      chipTheme: ChipThemeData(
+        backgroundColor: surfaceColor,
+        selectedColor: primaryColor,
+        disabledColor: surfaceColor,
+        checkmarkColor: Colors.black,
+        showCheckmark: true,
+        shape: const StadiumBorder(),
+        side: const BorderSide(color: primaryColor),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        labelStyle: TextStyle(
+          fontWeight: FontWeight.w500,
+          color: WidgetStateColor.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return Colors.white38;
+            }
+
+            if (states.contains(WidgetState.selected)) {
+              return Colors.black;
+            }
+
+            return primaryColor;
+          }),
+        ),
+      ),
     );
   }
 }

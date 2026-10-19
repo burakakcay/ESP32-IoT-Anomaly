@@ -1,402 +1,160 @@
 # Sentinel — ESP32 IoT Anomali İzleme Sistemi
 
-Sentinel; ESP32 üzerinde çalışan sıcaklık, nem, ivme ve jiroskop sensörlerinden veri toplayan, ölçümleri Cloud Firestore'da saklayan, Robust Z-score yöntemiyle anomali analizi yapan ve sonuçları Flutter mobil uygulaması ile web yönetim panelinde görselleştiren bir IoT izleme sistemidir.
+Sentinel; ESP32 ile sıcaklık, nem, ivme ve jiroskop verilerini toplayan, Node.js API üzerinden kaydeden ve Flutter arayüzünde gösteren bir IoT projesidir.
 
-- Web paneli: https://esp32-iot-anomali.web.app
-- Backend: https://sentinel-backend-s3yl.onrender.com
-
-Panel ve korumalı API uç noktaları yetkili Firebase kullanıcısıyla oturum açılmasını gerektirir.
+Yerel geliştirmede ölçümler SQLite'a kaydedilir. Kullanıcı girişi Firebase Authentication, kalıcı anomali geçmişi Cloud Firestore kullanır. Gemini destekli yorumlama isteğe bağlıdır.
 
 ## Özellikler
 
-- DHT22 ile sıcaklık ve nem ölçümü
-- MPU6050 ile üç eksenli ivme ve jiroskop ölçümü
-- Ölçümlerin 15 saniyede bir Cloud Firestore'a gönderilmesi
-- Wi-Fi bağlantısı kesildiğinde kontrollü yeniden bağlanma
-- NTP ile zaman senkronizasyonu
-- Son 240 ölçümün yaklaşık bir saatlik grafik geçmişi olarak gösterilmesi
-- Sıcaklık, nem, ivme ve jiroskop için sabit ve karşılaştırılabilir grafik ölçekleri
-- Grafik noktalarında değer, eksen ve ölçüm zamanı gösterimi
-- Son 60 ölçüm üzerinden Robust Z-score anomali analizi
-- İlk 20 ölçümün referans, sonraki 40 ölçümün analiz verisi olarak kullanılması
-- Gemini ile isteğe bağlı yapay zekâ destekli anomali yorumu
-- ESP32 çevrimdışı olduğunda son Firestore verilerinin gösterilmeye devam etmesi
-- Türkçe ve İngilizce mobil uygulama desteği
-- Firebase Authentication ile e-posta/parola girişi ve API'de kullanıcı UID kontrolü
-- Web yönetim panelinde genel özet, cihaz detayları ve üç etiketli demo cihaz
-- Son analiz ve kalıcı geçmiş için ayrı sekmeler
-- Anomalilerin ölçüm kimliğine göre tekrar oluşturulmadan Firestore'a kaydedilmesi
-- Kaydedilmiş en yeni 100 anomalinin ölçüm detaylarıyla görüntülenmesi
+- DHT22 ve MPU6050 üzerinden sensör verisi toplama
+- Uygun bağlantı koşullarında 5 saniyede bir ölçüm gönderimi
+- Cihaz anahtarıyla API erişimi ve mükerrer kayıt kontrolü
+- Geçici gönderim hatalarında artan bekleme süreleriyle tekrar deneme
+- UTC ölçüm zamanı ve arayüzde yerel saat gösterimi
+- Başarılı kalibrasyon sonrası jiroskop ofset düzeltmesi
+- Dört sensör grafiğinde tarih filtresi, yakınlaştırma ve kaydırma
+- Filtrelenmiş grafiklerde 30 saniyeden uzun veri boşluklarının gösterilmesi
+- Y eksenini veriye uydurma seçeneği
+- İvme için g, jiroskop için °/s gösterimi
+- Veri güncelliği takibi ve Robust Z-score anomali analizi
 
-## Sistem Mimarisi
+## Veri Akışı
 
-```mermaid
-flowchart LR
-    DHT["DHT22<br/>Sıcaklık ve nem"] --> ESP["ESP32 firmware"]
-    MPU["MPU6050<br/>İvme ve jiroskop"] --> ESP
-    ESP -->|"15 saniyede bir"| FS["Cloud Firestore"]
-    FS --> API["Node.js ve Express API"]
-    API --> AN["Robust Z-score analizi"]
-    AN --> AI["Gemini analizi<br/>(isteğe bağlı)"]
-    API --> APP["Flutter mobil uygulaması"]
-    API --> WEB["Flutter web yönetim paneli"]
-    AN -->|"Tespit edilen anomaliler"| FS
+```text
+ESP32 → HTTP API → SQLite → Flutter
+                     │
+                     └→ Anomali analizi → Firestore
+                                       → Gemini (isteğe bağlı)
 ```
 
-Veri akışı:
-
-1. ESP32 sensörleri okur ve ölçüme yerel bir zaman damgası ekler.
-2. Ölçüm `devices/{deviceId}/readings` koleksiyonuna yazılır.
-3. Node.js backend, Firestore verilerini mobil uygulamaya REST API üzerinden sunar.
-4. Mobil uygulama açılışta son 240 ölçümü yükler ve grafiklerde eski → yeni sırasıyla gösterir.
-5. Anomali analizi aynı sorgudaki en yeni 60 ölçüm üzerinden yapılır.
-6. Uygulama açıkken en güncel ölçüm 15 saniyede bir yenilenir.
-7. Çalıştırılan analizlerde bulunan anomaliler `devices/{deviceId}/anomalies/{readingId}` yoluna kaydedilir.
-8. Kalıcı geçmiş ekranı kayıtları API üzerinden okur; yeni analiz veya Gemini çağrısı başlatmaz.
-
-## Kullanılan Teknolojiler
-
-| Katman | Teknolojiler |
-|---|---|
-| Donanım | ESP32, DHT22, MPU6050 |
-| Firmware | Arduino, PlatformIO, FirebaseClient |
-| Veritabanı | Google Cloud Firestore |
-| Backend | Node.js, Express, Firebase Admin SDK |
-| Anomali analizi | Robust Z-score, medyan ve MAD |
-| Yapay zekâ | Google Gemini API |
-| Mobil uygulama | Flutter, Dart, `fl_chart` |
-| Web paneli | Flutter Web, Firebase Hosting |
-| Kimlik doğrulama | Firebase Authentication, Firebase ID token |
-| Backend yayını | Render |
-| Yerelleştirme | Flutter localization, Türkçe ve İngilizce |
+`READINGS_SOURCE` ayarı backend'in ölçümleri SQLite veya Firestore'dan okumasını belirler. ESP32'nin API üzerinden gönderdiği yeni ölçümler SQLite'a kaydedilir.
 
 ## Proje Yapısı
 
 ```text
-ESP32-IoT-Anomaly/
-├── backend/                  # REST API ve anomali analizi
-│   ├── index.js
-│   ├── anomalyDetector.js
-│   ├── config/
-│   ├── middleware/
-│   ├── repositories/
-│   ├── routes/
-│   ├── services/
-│   ├── test/
-│   └── package.json
-├── firmware/                 # ESP32 PlatformIO projesi
-│   ├── include/
-│   ├── src/main.cpp
-│   └── platformio.ini
-├── mobile_app/               # Flutter mobil uygulaması ve web paneli
-│   ├── assets/
-│   ├── lib/
-│   │   ├── core/
-│   │   ├── models/
-│   │   ├── screens/
-│   │   ├── services/
-│   │   └── widgets/
-│   ├── test/
-│   ├── web/
-│   ├── firebase.json
-│   └── pubspec.yaml
-└── README.md
+firmware/     ESP32 ve PlatformIO kodları
+backend/      Express API, SQLite ve anomali analizi
+mobile_app/   Flutter mobil/web arayüzü
 ```
 
-## Firestore Veri Yapısı
+## Gereksinimler
 
-Ölçümler aşağıdaki belge yolunda tutulur:
-
-```text
-devices/{deviceId}/readings/{readingId}
-```
-
-Örnek ölçüm belgesi:
-
-```json
-{
-  "device_id": "ESP32_Sensor_Node_001",
-  "timestamp": "2026-08-14T00:52:13",
-  "temperature": 29.5,
-  "humidity": 44.8,
-  "accel_x": 17068,
-  "accel_y": 196,
-  "accel_z": -1604,
-  "gyro_x": -344,
-  "gyro_y": -166,
-  "gyro_z": 204
-}
-```
-
-## Anomali Analizi
-
-### Son ölçümlerin analizi
-
-Backend, son 60 ölçümü kronolojik sıraya çevirir. İlk 20 ölçüm referans kümesi olarak kullanılır; sonraki 40 ölçüm önceki verilerle karşılaştırılır.
-
-Her sensör alanı için:
-
-1. Referans değerlerin medyanı hesaplanır.
-2. Medyandan mutlak sapmaların medyanı (MAD) hesaplanır.
-3. Robust Z-score değeri hesaplanır:
-
-```text
-Robust Z-score = 0.6745 × (değer - medyan) / MAD
-```
-
-Mutlak Robust Z-score değeri `5` sınırını aşarsa ölçüm anomali olarak işaretlenir.
-
-Her ölçüm, kendisinden önceki ölçümlerle karşılaştırılır; referans kümesi analiz boyunca büyür. MAD sıfır olduğunda mevcut uygulama Z-score değerini sıfır kabul eder. Analiz için en az 21 ölçüm gerekir.
-
-### Kalıcı anomali geçmişi
-
-Kayıt yolu: `devices/{deviceId}/anomalies/{readingId}`.
-
-- Belge kimliği kaynak ölçüm kimliğidir. Aynı ölçüm tekrar analiz edilse de ikinci kayıt oluşturulmaz ve ilk kayıt değiştirilmez.
-- `timestamp` ölçüm zamanını, `detectedAt` sunucudaki kayıt zamanını tutar. API, `detectedAt` değerini ISO 8601 metni olarak döndürür.
-- Kayıtta `device_id`, `readingId`, `isAnomaly`, `anomalyCount` ve anomalili sensörlerin `measurements` detayları bulunur.
-- Geçmiş, ölçüm zamanına göre yeniden eskiye sıralanan en fazla 100 kaydı getirir. `returnedCount` yalnızca bu yanıttaki kayıt sayısıdır.
-- Analiz istek üzerine çalışır. Uygulama kapalıyken bütün ölçümlerin arka planda analiz edilmesi veya eski verilerin topluca taranması sağlanmaz.
-- Son analiz önbelleği 10 saniye, AI yanıt önbelleği 60 saniyedir. Geçmişi okumak yeni analiz yapmaz; AI yorumu geçmiş belgelerine kaydedilmez.
-
-## Kurulum
-
-### Gereksinimler
-
-- ESP32 geliştirme kartı
-- DHT22 sıcaklık ve nem sensörü
-- MPU6050 ivme ve jiroskop sensörü
+- ESP32, DHT22 ve MPU6050
 - PlatformIO
-- Node.js ve npm
-- Flutter SDK ve Android geliştirme ortamı
-- Firebase projesi ve Cloud Firestore veritabanı
-- Firebase Authentication üzerinde etkin e-posta/parola sağlayıcısı
-- Web yayını için Firebase CLI; Firebase uygulama yapılandırması için FlutterFire CLI
-- Gemini analizi kullanılacaksa Gemini API anahtarı
+- Node.js 24 ve npm
+- Projenin SDK gereksinimini karşılayan Flutter SDK ve Chrome
+- Firebase projesi, Authentication ve Firestore yapılandırması
 
-### 1. Firmware yapılandırması
+## Yerel Kurulum
 
-`firmware/include/secrets.h` dosyasını oluşturun:
+### 1. Backend
 
-```cpp
-#pragma once
-
-#define WIFI_SSID "WIFI_ADI"
-#define WIFI_PASSWORD "WIFI_PAROLASI"
-
-#define FIREBASE_PROJECT_ID "FIREBASE_PROJE_KIMLIGI"
-#define FIREBASE_API_KEY "FIREBASE_API_ANAHTARI"
-#define FIREBASE_USER_EMAIL "CIHAZ_KULLANICI_EPOSTASI"
-#define FIREBASE_USER_PASSWORD "CIHAZ_KULLANICI_PAROLASI"
-
-#define NTP_SERVER "pool.ntp.org"
-#define TZ_INFO "TRT-3"
-```
-
-Bu dosya `.gitignore` kapsamındadır ve sürüm kontrolüne eklenmemelidir.
-
-Firmware'i derleyin ve ESP32'ye yükleyin:
-
-```powershell
-cd firmware
-pio run
-pio run --target upload
-pio device monitor
-```
-
-ESP32 ayrıca yerel ağ üzerinde `/sensor` HTTP uç noktasından son ölçümü JSON olarak sunar.
-
-### 2. Backend yapılandırması
-
-Bağımlılıkları yükleyin:
-
-```powershell
-cd backend
-npm install
-```
-
-Firebase Console üzerinden bir servis hesabı anahtarı oluşturun ve dosyayı şu konuma yerleştirin:
-
-```text
-backend/serviceAccountKey.json
-```
-
-`backend/.env` dosyasını oluşturun. `ALLOWED_USER_UID`, Firebase Authentication'da panele giriş yapacak kullanıcının UID değeridir; ESP32 için kullanılan cihaz hesabından ayrı bir kullanıcı kullanın.
+Firebase servis hesabı dosyasını `backend/serviceAccountKey.json` konumuna yerleştirin. `backend/.env` dosyasını oluşturun:
 
 ```env
 PORT=3000
 DEVICE_ID=ESP32_Sensor_Node_001
-ALLOWED_USER_UID=YETKILI_KULLANICI_UID
-# İsteğe bağlı: Gemini yorumu için
-GEMINI_API_KEY=API_ANAHTARI
-# İsteğe bağlı: varsayılan backend/serviceAccountKey.json yerine başka konum
-# FIREBASE_SERVICE_ACCOUNT_PATH=C:/guvenli/konum/serviceAccountKey.json
+READINGS_SOURCE=sqlite
+ALLOWED_USER_UID=FIREBASE_KULLANICI_UID
+DEVICE_API_KEY=64_HEX_KARAKTERLIK_CIHAZ_ANAHTARI
+# İsteğe bağlı:
+# GEMINI_API_KEY=GEMINI_ANAHTARI
 ```
 
-Backend'i başlatın:
+`DEVICE_API_KEY` için yer tutucu yerine 64 hexadecimal karakterlik bir anahtar kullanılmalıdır.
 
 ```powershell
+cd backend
+npm install
 npm start
 ```
 
-API varsayılan olarak `http://localhost:3000` adresinde çalışır.
+API `http://localhost:3000` adresinde çalışır. SQLite dosyası otomatik olarak `backend/data/sentinel.sqlite` konumunda oluşturulur.
 
-### 3. Flutter uygulaması
+### 2. ESP32
 
-Uygulama `lib/firebase_options.dart` yapılandırmasıyla Firebase'e bağlanır. Kendi Firebase projenizi kullanıyorsanız Firebase CLI ile giriş yaptıktan sonra `mobile_app` klasöründe yapılandırmayı oluşturun:
+`firmware/include/secrets.h` içindeki Wi-Fi ve zaman ayarlarını yapılandırın. API ayarlarını ekleyin:
+
+```cpp
+#define SENTINEL_API_URL "http://BILGISAYAR_IP_ADRESI:3000/api/readings"
+#define SENTINEL_API_KEY "BACKEND_ILE_AYNI_CIHAZ_ANAHTARI"
+```
+
+ESP32, bilgisayarın yerel IP adresine erişebilmelidir. Burada `localhost` kullanılmaz. Bilgisayarın IP adresi değişirse ayarı güncelleyip yeniden yükleyin.
 
 ```powershell
-firebase login
-dart pub global activate flutterfire_cli
-dart pub global run flutterfire_cli:flutterfire configure --project=FIREBASE_PROJE_KIMLIGI --platforms=android,web --android-package-name=com.burakakcay.sentinel
+cd firmware
+pio run --target upload
+pio device monitor
 ```
 
-`mobile_app/lib/core/constants/api_constants.dart` dosyası varsayılan olarak yayınlanan backend'i kullanır:
+Başlangıç kalibrasyonu boyunca sensörü sabit tutun.
 
-```dart
-static const nodeBaseUrl = 'https://sentinel-backend-s3yl.onrender.com';
-```
+### 3. Flutter
 
-Ardından:
+`mobile_app/lib/firebase_options.dart` dosyasının kullanılacak Firebase projesi için yapılandırılmış olması gerekir. Oturum açan kullanıcının UID'si backend'deki `ALLOWED_USER_UID` ile eşleşmelidir.
 
 ```powershell
 cd mobile_app
 flutter pub get
 flutter gen-l10n
-flutter run
+flutter run -d chrome --web-port=5000 --dart-define=API_BASE_URL=http://localhost:3000
 ```
 
-Yerel backend kullanacaksanız adresi `http://BILGISAYAR_IP_ADRESI:3000` olarak değiştirin; telefonun bu bilgisayara ağ erişimi olmalıdır. Yayınlanan HTTPS backend için aynı ağ gerekmiyor.
+Backend terminali açık kalmalıdır. Yerel CORS ayarı `http://localhost:5000` adresine izin verir.
 
-Web panelini `mobile_app` klasöründe çalıştırın:
+Fiziksel telefonda çalıştırılırken API adresinde `localhost` yerine bilgisayarın erişilebilir yerel IP adresi kullanılmalıdır.
 
-```powershell
-flutter run -d chrome --web-port=5000
-```
+## API
 
-`backend/app.js` içindeki CORS listesi `http://localhost:5000` ve mevcut Firebase Hosting adreslerine izin verir. Başka bir web adresi kullanıldığında bu liste güncellenmelidir. Uygulamada oturum açan kullanıcının UID'si backend'deki `ALLOWED_USER_UID` ile eşleşmelidir.
-
-### 4. Yayınlama
-
-Backend için kullanılan Render yapılandırması:
-
-| Alan | Değer |
-|---|---|
-| Root Directory | `backend` |
-| Build Command | `npm ci` |
-| Start Command | `npm start` |
-| Health Check Path | `/health` |
-| Build Filter / Included Paths | `backend/**` |
-
-Render ortamında `DEVICE_ID`, `ALLOWED_USER_UID` ve isteğe bağlı `GEMINI_API_KEY` tanımlanır. Servis hesabı `serviceAccountKey.json` adlı secret file olarak eklenir; `FIREBASE_SERVICE_ACCOUNT_PATH=/etc/secrets/serviceAccountKey.json` ayarlanır. Backend Render'ın sağladığı `PORT` değerini kullanır.
-
-Web panelini yayınlamak için `mobile_app` klasöründe:
-
-```powershell
-flutter build web --release
-firebase deploy --only hosting --project=esp32-iot-anomali
-```
-
-`firebase.json`, Hosting için `build/web` dizinini ve tek sayfa uygulama yönlendirmesini kullanır. Kendi projenizde proje kimliğini değiştirin. Her web değişikliğinde deploy öncesi yeniden build alınmalıdır. Eski arayüz görünürse tarayıcı önbelleğini devre dışı bırakıp yeniden yükleyin.
-
-## REST API
-
-| Yöntem | Uç nokta | Açıklama |
+| Yöntem | Yol | İşlev |
 |---|---|---|
-| `GET` | `/health` | Kimlik doğrulaması gerektirmeyen servis sağlık yanıtı. |
-| `GET` | `/api/dashboard` | Grafik için son 240 ölçümü ve son 60 ölçümden üretilen anomali sonucunu döndürür. |
-| `GET` | `/api/readings` | Son 60 ölçümü döndürür. |
-| `GET` | `/api/readings/latest` | En güncel ölçümü döndürür. |
-| `GET` | `/api/anomalies` | Son 60 ölçümün anomali analizini döndürür. |
-| `GET` | `/api/anomalies/ai` | Anomaliler için Gemini yorumunu döndürür. |
-| `GET` | `/api/anomalies/history` | Kaydedilmiş en yeni 100 anomalinin geçmişini döndürür. |
+| GET | `/health` | Servis sağlık kontrolü |
+| POST | `/api/readings` | Cihaz ölçümünü kaydetme |
+| GET | `/api/readings` | Son ölçümler |
+| GET | `/api/readings/latest` | En yeni ölçüm |
+| GET | `/api/readings/history?fromMs=...&toMs=...` | Tarih aralığındaki ölçümler |
+| GET | `/api/dashboard` | Ölçümler ve anomali sonucu |
+| GET | `/api/anomalies` | Anomali analizi |
+| GET | `/api/anomalies/ai` | İsteğe bağlı Gemini yorumu |
+| GET | `/api/anomalies/history` | Kalıcı anomali geçmişi |
 
-Tüm `/api/*` isteklerinde `Authorization: Bearer <Firebase ID token>` başlığı gerekir. Eksik/geçersiz token `401`, farklı kullanıcı UID'si `403`, yapılandırılmamış `ALLOWED_USER_UID` ise geçerli token sonrasında `503` döndürür. Flutter API servisi token'ı oturumdan alıp otomatik ekler.
+Ölçüm gönderimi cihaz anahtarını, korumalı GET istekleri Firebase ID token'ını `Authorization: Bearer ...` başlığında kullanır. `/health` herkese açıktır.
 
-Örnek kontrol:
+Tarih aralığı sorgusu SQLite gerektirir; başlangıç dahil, bitiş hariçtir ve en fazla 10.000 kayıt döndürür.
 
-```powershell
-$headers = @{ Authorization = "Bearer GECERLI_FIREBASE_ID_TOKEN" }
-$dashboard = Invoke-RestMethod -Uri "http://localhost:3000/api/dashboard" -Headers $headers
-$dashboard.readings.Count
-$dashboard.anomalies.analyzedReadings
-```
+## Uygulama Davranışı
 
-Beklenen sonuçlar sırasıyla `240` ve `40` değerleridir. Firestore'da 240'tan az belge varsa ölçüm sayısı daha düşük olabilir.
+- Açılışta son 240 ölçüm yüklenir; güncel ölçüm 15 saniyede bir sorgulanır.
+- Son ölçüm 45 saniyeden eskiyse “Veri güncel değil” gösterilir.
+- Tarih filtresi backend'den ayrıca geçmiş kayıtları getirir.
+- Jiroskop düzeltmesi yalnızca yeni kayıtlara uygulanır; eski veriler değişmez.
+- Anomali analizi son 60 ölçümü kullanır. İlk 20 ölçüm başlangıç referansıdır; analiz için en az 21 ölçüm gerekir.
 
-## Mobil Uygulama Davranışı
+## Kontroller
 
-- Uygulama açıldığında son 240 ölçüm yüklenir.
-- Grafikler yaklaşık bir saatlik geçmişi gösterir.
-- Sıcaklık, nem, ivme ve jiroskop grafiklerinde ölçüm noktasına dokunulduğunda zaman ve değer gösterilir.
-- ESP32'den yeni veri gelmezse son ölçümler ekranda kalır.
-- Son ölçüm 45 saniyeden eskiyse cihaz `Veri güncel değil` olarak işaretlenir. Bu durum backend'e ulaşılamamasından ayrı gösterilir.
-- Backend kapalıysa mobil uygulama Firestore verilerini alamaz.
-- Uygulama açıkken en yeni ölçüm 15 saniyede bir sorgulanır.
-- Bellekte en fazla 240 ölçüm tutulur; sınır aşıldığında en eski ölçüm kaldırılır.
-
-## Doğrulama
-
-Aşağıdaki komutlar, her bileşenin kendi klasöründe çalıştırılır.
-
-Firmware:
+İlgili bileşenin klasöründe çalıştırın:
 
 ```powershell
-cd firmware
+# firmware
 pio run
-```
 
-Backend:
-
-```powershell
-cd backend
-node --check index.js
+# backend
 npm test
-```
 
-Flutter:
-
-```powershell
-cd mobile_app
+# mobile_app
 flutter analyze
 flutter test
 ```
 
-Manuel test akışı:
+Elle kontrol: veri gönderimi, ESP32 bağlantısının kesilip geri gelmesi, boş tarih aralığı, grafik yakınlaştırma/sıfırlama ve Y ekseni seçeneği.
 
-1. Backend'i başlatın.
-2. Mobil uygulamayı tamamen kapatıp yeniden açın.
-3. Grafiklerin geçmiş 240 ölçümle dolduğunu kontrol edin.
-4. ESP32'yi bağlayın ve yeni ölçümlerin 15 saniyede bir geldiğini doğrulayın.
-5. ESP32'nin bağlantısını kesin.
-6. Yaklaşık 45–60 saniye içinde durumun `Veri güncel değil` olarak değiştiğini doğrulayın.
-7. Eski ölçümlerin ve grafiklerin ekranda kalmaya devam ettiğini kontrol edin.
-8. Web panelinde son analiz ve kalıcı geçmiş sekmelerini açın; tarih sırasını ve genişletilen ölçüm detaylarını kontrol edin.
-9. Yeni ölçüm yokken analizi tekrar çalıştırın; Firestore'daki aynı ölçümlerin anomali kayıt sayısının artmadığını doğrulayın.
-10. AI yorumunu ve oturum kapatma işlemini kontrol edin. Tokensiz bir `/api/*` isteğinin `401` döndürdüğünü doğrulayın.
+## Sınırlamalar ve Güvenlik
 
-## Web Yönetim Paneli
-
-- Genel bakış, gerçek cihazların güncellik durumlarını özetler. Demo cihazlar gerçek cihaz sayaçlarına katılmaz.
-- Cihazlar bölümünden gerçek ESP32'nin ölçümleri ve üç demo cihazın temsili verileri açılır. Demo verileri fiziksel cihazlardan gelmez.
-- Son analiz bölümünde son ölçüm grubunun sonuçları ve isteğe bağlı AI yorumu yer alır.
-- Kalıcı geçmiş bölümünde kaydedilmiş en yeni 100 anomali listelenir. Tarih/cihaz filtresi ve sayfalama henüz yoktur.
-- Sol menüde oturum kapatma bulunur. Tarayıcı ve menü logoları `assets/icons/sentinel_monochrome_clean.svg` kaynağından hazırlanmıştır.
-
-## Güvenlik
-
-- `firmware/include/secrets.h`, `backend/.env` ve `backend/serviceAccountKey.json` dosyaları sürüm kontrolüne eklenmemelidir.
-- Gerçek Wi-Fi parolaları, Firebase kullanıcı bilgileri, servis hesabı anahtarları ve Gemini API anahtarları README veya kaynak kod içine yazılmamalıdır.
-- Bir anahtar yanlışlıkla herkese açık bir depoya gönderilirse yalnızca dosyayı silmek yeterli değildir; ilgili anahtar veya parola yenilenmelidir.
-
-## Bilinen Sınırlamalar
-
-- Backend ve mobil uygulama tek bir `DEVICE_ID` değeri için yapılandırılmıştır.
-- API erişimi tek bir `ALLOWED_USER_UID` ile sınırlandırılır; çok kullanıcılı rol/yetki yönetimi bulunmaz.
-- Anomali geçmişi istek üzerine yapılan analizlerden oluşur; kesintisiz arka plan analizi veya eksiksiz geçmiş taraması değildir.
-- Ölçüm zamanları saat dilimi içermeyen metinlerdir; farklı saat dilimlerindeki istemcilerde zaman yorumlaması sınırlıdır.
-- Mobil uygulama Firestore'a doğrudan bağlanmaz; Node.js backend'in çalışıyor olması gerekir.
-- Sabit grafik aralıklarının dışına çıkan değerler grafik sınırında kırpılabilir.
-- Anomali tespiti prototip amaçlı istatistiksel bir yöntemdir ve kesin arıza teşhisi olarak değerlendirilmemelidir.
-- Gemini analizi isteğe bağlıdır ve `GEMINI_API_KEY` olmadan kullanılamaz.
-
+- Sistem tek cihaz ve tek yetkili kullanıcı için yapılandırılmıştır.
+- SQLite kullanılsa da Firebase bağımlılıkları devam eder.
+- Bekleyen gönderim RAM'dedir; kalıcı çevrimdışı ölçüm kuyruğu yoktur.
+- Geçerli zaman elde edilmeden ölçüm gönderilmez.
+- Firmware'in mevcut API gönderimi yerel HTTP içindir.
+- Anomali analizi istek üzerine çalışır ve kesin arıza teşhisi sağlamaz.
+- `.env`, `secrets.h`, servis hesabı dosyaları ve gerçek anahtarlar sürüm kontrolüne eklenmemelidir.

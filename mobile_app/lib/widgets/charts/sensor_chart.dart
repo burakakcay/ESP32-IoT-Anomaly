@@ -19,6 +19,8 @@ class SensorChart extends StatelessWidget {
   final bool isAcceleration;
   final bool isGyroscope;
 
+  final bool fitYAxis;
+
   const SensorChart({
     super.key,
 
@@ -35,6 +37,7 @@ class SensorChart extends StatelessWidget {
 
     this.isAcceleration = false,
     this.isGyroscope = false,
+    this.fitYAxis = false,
   });
 
   bool get _usesTimeAxis =>
@@ -101,13 +104,55 @@ class SensorChart extends StatelessWidget {
         : values.isEmpty) {
       return SizedBox(height: 250, child: Center(child: Text(l10n.noData)));
     }
-
-    final (minY, maxY, horizontalInterval) = switch (sensorType) {
+    var (minY, maxY, horizontalInterval) = switch (sensorType) {
       SensorType.temperature => (10.0, 60.0, 5.0),
       SensorType.humidity => (20.0, 80.0, 10.0),
       SensorType.acceleration => (-2.0, 2.0, 0.5),
       SensorType.gyroscope => (-250.0, 250.0, 50.0),
     };
+
+    if (fitYAxis) {
+      // Üç eksenli grafiklerde, birime dönüştürülmüş
+      // X/Y/Z değerlerinin tamamını aynı ölçeğe dahil et.
+      final candidates = <double>[
+        if (isThreeAxis) ...[
+          ...chartValuesX!.cast<num>().map((value) => value.toDouble()),
+          ...chartValuesY!.cast<num>().map((value) => value.toDouble()),
+          ...chartValuesZ!.cast<num>().map((value) => value.toDouble()),
+        ] else
+          ...values.cast<num>().map((value) => value.toDouble()),
+      ].where((value) => value.isFinite).toList();
+
+      if (candidates.isNotEmpty) {
+        final lowest = candidates.reduce((a, b) => a < b ? a : b);
+        final highest = candidates.reduce((a, b) => a > b ? a : b);
+
+        // Sabit veride bile sıfır genişlikli eksen oluşmasın.
+        final minimumPadding = switch (sensorType) {
+          SensorType.temperature => 0.5,
+          SensorType.humidity => 1.0,
+          SensorType.acceleration => 0.05,
+          SensorType.gyroscope => 0.5,
+        };
+
+        final proportionalPadding = (highest - lowest) * 0.1;
+        final padding = proportionalPadding > minimumPadding
+            ? proportionalPadding
+            : minimumPadding;
+
+        // Etiket hassasiyetine uygun aralıklarla ölçeği yuvarla.
+        final step = sensorType == SensorType.acceleration ? 0.01 : 0.1;
+        final targetInterval = (highest - lowest + 2 * padding) / 5;
+        horizontalInterval = (targetInterval / step).ceil() * step;
+
+        minY =
+            ((lowest - padding) / horizontalInterval).floor() *
+            horizontalInterval;
+        maxY =
+            ((highest + padding) / horizontalInterval).ceil() *
+            horizontalInterval;
+      }
+    }
 
     return SizedBox(
       height: 360,
@@ -226,7 +271,8 @@ class SensorChart extends StatelessWidget {
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 45,
+                        reservedSize: isGyroscope ? 80 : 60,
+                        interval: horizontalInterval,
                         getTitlesWidget: (value, meta) {
                           final yLabel = isAcceleration
                               ? '${value.toStringAsFixed(2)} g'
@@ -236,6 +282,8 @@ class SensorChart extends StatelessWidget {
 
                           return Text(
                             yLabel,
+                            maxLines: 1,
+                            softWrap: false,
                             style: const TextStyle(fontSize: 11),
                           );
                         },

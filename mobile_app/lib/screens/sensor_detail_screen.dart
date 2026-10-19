@@ -23,6 +23,20 @@ class SensorDetailScreen extends StatefulWidget {
 class _SensorDetailScreenState extends State<SensorDetailScreen> {
   SensorType get sensorType => widget.sensorType;
   SensorHistoryService get historyService => widget.historyService;
+  bool get _supportsHistory => switch (sensorType) {
+    SensorType.temperature ||
+    SensorType.humidity ||
+    SensorType.acceleration ||
+    SensorType.gyroscope => true,
+  };
+
+  double? _measurement(SensorData reading) {
+    return switch (sensorType) {
+      SensorType.temperature => reading.temperature,
+      SensorType.humidity => reading.humidity,
+      _ => null,
+    };
+  }
 
   late DateTime _from;
   late DateTime _to;
@@ -35,6 +49,7 @@ class _SensorDetailScreenState extends State<SensorDetailScreen> {
   bool _isLoading = false;
   String? _errorMessage;
   bool _hasAppliedFilter = false;
+  bool _fitYAxis = false;
 
   @override
   void initState() {
@@ -68,7 +83,8 @@ class _SensorDetailScreenState extends State<SensorDetailScreen> {
       if (!mounted) return;
 
       setState(() {
-        _filteredReadings = readings;
+        _filteredReadings = List<SensorData>.of(readings)
+          ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
         _hasAppliedFilter = true;
         _appliedFrom = from;
         _appliedTo = to;
@@ -208,6 +224,17 @@ class _SensorDetailScreenState extends State<SensorDetailScreen> {
               onPressed: _isLoading ? null : _loadFilteredReadings,
               child: const Text('Uygula'),
             ),
+            FilterChip(
+              label: const Text('Y eksenini veriye uydur.'),
+              selected: _fitYAxis,
+              onSelected: _isLoading
+                  ? null
+                  : (selected) {
+                      setState(() {
+                        _fitYAxis = selected;
+                      });
+                    },
+            ),
           ],
         ),
         if (_isLoading) ...[
@@ -304,15 +331,22 @@ class _SensorDetailScreenState extends State<SensorDetailScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    final useFilteredData =
-        sensorType == SensorType.temperature && _hasAppliedFilter;
+    final useFilteredData = _supportsHistory && _hasAppliedFilter;
 
-    final validReadings = _filteredReadings
-        .where((reading) => reading.temperature != null)
-        .toList();
+    final isThreeAxis =
+        sensorType == SensorType.acceleration ||
+        sensorType == SensorType.gyroscope;
+
+    final validReadings = _filteredReadings.where((reading) {
+      if (isThreeAxis) return true;
+
+      return _measurement(reading)?.isFinite ?? false;
+    }).toList();
 
     final chartValues = useFilteredData
-        ? validReadings.map((reading) => reading.temperature!).toList()
+        ? isThreeAxis
+              ? <double>[]
+              : validReadings.map((reading) => _measurement(reading)!).toList()
         : getChartValues();
 
     final chartTimestamps = useFilteredData
@@ -322,6 +356,37 @@ class _SensorDetailScreenState extends State<SensorDetailScreen> {
             SensorType.humidity => historyService.humidityTimestamps,
             _ => historyService.timestamps,
           };
+
+    List<double>? axisValues(
+      double Function(SensorData) select,
+      List<double>? fallback,
+    ) {
+      if (!useFilteredData) return fallback;
+      if (!isThreeAxis) return null;
+
+      return validReadings.map(select).toList();
+    }
+
+    final chartValuesX = axisValues(
+      (reading) => sensorType == SensorType.acceleration
+          ? reading.acceleration.x.toDouble()
+          : reading.gyroscope.x.toDouble(),
+      getChartValuesX(),
+    );
+
+    final chartValuesY = axisValues(
+      (reading) => sensorType == SensorType.acceleration
+          ? reading.acceleration.y.toDouble()
+          : reading.gyroscope.y.toDouble(),
+      getChartValuesX(),
+    );
+
+    final chartValuesZ = axisValues(
+      (reading) => sensorType == SensorType.acceleration
+          ? reading.acceleration.z.toDouble()
+          : reading.gyroscope.z.toDouble(),
+      getChartValuesX(),
+    );
 
     final double? min = chartValues.isEmpty
         ? null
@@ -344,7 +409,7 @@ class _SensorDetailScreenState extends State<SensorDetailScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            if (sensorType == SensorType.temperature) ...[
+            if (_supportsHistory) ...[
               _buildDateFilter(),
               const SizedBox(height: 24),
             ],
@@ -439,11 +504,12 @@ class _SensorDetailScreenState extends State<SensorDetailScreen> {
               timestamps: chartTimestamps,
               rangeStart: useFilteredData ? _chartFrom : null,
               rangeEnd: useFilteredData ? _chartTo : null,
-              valuesX: getChartValuesX(),
-              valuesY: getChartValuesY(),
-              valuesZ: getChartValuesZ(),
+              valuesX: chartValuesX,
+              valuesY: chartValuesY,
+              valuesZ: chartValuesZ,
               isAcceleration: sensorType == SensorType.acceleration,
               isGyroscope: sensorType == SensorType.gyroscope,
+              fitYAxis: _fitYAxis,
             ),
           ],
         ),
