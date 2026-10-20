@@ -22,7 +22,19 @@ function createReadingIngestRouter({ requireDeviceAuth, repository }) {
     }
 
     try {
+      const startedAt = process.hrtime.bigint();
+
       const result = repository.saveReading(reading);
+
+      const elapsedMs = Number(process.hrtime.bigint() - startedAt) / 1_000_000;
+
+      if (elapsedMs >= 100) {
+        console.warn(
+          `[SQLITE][YAVAS] Durum: ${result.status} | ` +
+            `Kayıt: ${reading.readingId} | ` +
+            `Süre: ${elapsedMs.toFixed(2)} ms`,
+        );
+      }
 
       if (result.status === "conflict") {
         return res.status(409).json({

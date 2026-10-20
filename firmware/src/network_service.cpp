@@ -29,6 +29,7 @@ namespace
     bool connectWifi()
     {
         WiFi.mode(WIFI_STA);
+        WiFi.setSleep(false);
         WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
         const uint32_t startAttemptTime = millis();
@@ -120,7 +121,7 @@ namespace
 
         lastWifiReconnectAttempt = millis();
 
-        SentinelLog::write(SentinelLog::Level::Warning, "WIFI", "Yeniden baglaniliyor...");
+        SentinelLog::write(SentinelLog::Level::Warning, "WIFI", "Yeniden bağlanılıyor...");
 
         if (connectWifi())
         {
@@ -133,12 +134,12 @@ namespace
 
             if (!syncTimeFromNTP())
             {
-                SentinelLog::write(SentinelLog::Level::Error, "SAAT", "Senkronizasyon basarisiz.");
+                SentinelLog::write(SentinelLog::Level::Error, "SAAT", "Senkronizasyon başarısız.");
             }
         }
         else
         {
-            SentinelLog::write(SentinelLog::Level::Error, "WIFI", "Yeniden baglanti kurulamadi.");
+            SentinelLog::write(SentinelLog::Level::Error, "WIFI", "Yeniden bağlantı kurulamadı.");
         }
     }
 
@@ -158,7 +159,7 @@ namespace
 
         if (!syncTimeFromNTP())
         {
-            SentinelLog::write(SentinelLog::Level::Error, "SAAT", "Senkronizasyon basarisiz.");
+            SentinelLog::write(SentinelLog::Level::Error, "SAAT", "Senkronizasyon başarısız.");
         }
     }
 }

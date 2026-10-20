@@ -15,8 +15,8 @@ namespace SentinelLog
         Off
     };
 
-    // Info hides measurements and successful write messages.
-    constexpr Level MIN_LEVEL = Level::Debug;
+    // Normal kullanım: Info. Ayrıntılı inceleme: Debug.
+    constexpr Level MIN_LEVEL = Level::Info;
 
     inline void write(Level level, const char *tag, const char *format, ...)
         __attribute__((format(printf, 3, 4)));

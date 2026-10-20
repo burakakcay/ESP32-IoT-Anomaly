@@ -356,7 +356,7 @@ namespace
 
             return true;
         }
-        SentinelLog::write(SentinelLog::Level::Error, "KALIBRASYON", "Basarisiz; ham jiroskop degerleri kullanilacak.");
+        SentinelLog::write(SentinelLog::Level::Error, "KALIBRASYON", "Başarısız; ham jiroskop değerleri kullanılacak.");
         return false;
     }
 }
@@ -378,7 +378,7 @@ void initializeSensors()
     }
     else
     {
-        SentinelLog::write(SentinelLog::Level::Error, "SENSOR", "MPU6050 baglantisi kurulamadi.");
+        SentinelLog::write(SentinelLog::Level::Error, "SENSOR", "MPU6050 bağlantısı kurulamadı.");
         return;
     }
 
@@ -473,7 +473,7 @@ void updateVibrationSampling()
         SentinelLog::write(
             SentinelLog::Level::Warning,
             "TITRESIM",
-            "Ivme aralik sinirina ulasti; pencere iptal edildi.");
+            "İvme aralık sınırına ulaştı; pencere iptal edildi.");
     }
 }
 
@@ -536,7 +536,7 @@ SensorReading readSensorData()
         "DHT",
         "Okuma: %.1f ms | %s",
         dhtElapsedUs / 1000.0,
-        dhtValid ? "Gecerli" : "Gecersiz");
+        dhtValid ? "Geçerli" : "Geçersiz");
 
     MotionSnapshot motion{};
 

@@ -4,7 +4,7 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "C:/Users/JIl/.platformio/packages/framework-arduinoespressif32/cores/esp32"
+                "C:/Users/burak/.platformio/packages/framework-arduinoespressif32/cores/esp32"
             ],
             "defines": [
                 "_DEBUG",

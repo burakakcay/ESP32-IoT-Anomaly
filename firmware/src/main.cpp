@@ -14,19 +14,23 @@ unsigned long lastApiReading = 0;
 // Grafik testleri için 5 saniyede bir ölçüm hazırla.
 const unsigned long API_INTERVAL = 5000;
 
-void logSlowOperation(const char *operation, uint32_t startedUs)
+void logSlowOperation(
+    const char *operation,
+    uint32_t startedUs,
+    uint32_t thresholdMs)
 {
     const uint32_t elapsedUs = micros() - startedUs;
 
-    if (elapsedUs < 10000)
+    if (elapsedUs / 1000.0 < thresholdMs)
         return;
 
     SentinelLog::write(
         SentinelLog::Level::Warning,
         "SURE",
-        "%s: %.1f ms",
+        "%s: %.1f ms | Eşik: %lu ms",
         operation,
-        elapsedUs / 1000.0);
+        elapsedUs / 1000.0,
+        static_cast<unsigned long>(thresholdMs));
 }
 
 void setup()
@@ -40,15 +44,13 @@ void loop()
 {
     uint32_t startedUs = micros();
     updateNetworkService();
-    logSlowOperation("Ag islemleri", startedUs);
+    logSlowOperation("Ağ işlemleri", startedUs, 100);
 
-    startedUs = micros();
     updateApiService();
-    logSlowOperation("API gönderim islemleri", startedUs);
 
     startedUs = micros();
     updateVibrationSampling();
-    logSlowOperation("Titreşim işlemleri", startedUs);
+    logSlowOperation("Titreşim raporu işleme", startedUs, 50);
 
     if (
         isWifiConnected() &&
@@ -59,14 +61,14 @@ void loop()
 
         startedUs = micros();
         SensorReading reading = readSensorData();
-        logSlowOperation("Sensor okuma ve ozet", startedUs);
+        logSlowOperation("Sensör okuma ve özet", startedUs, 50);
 
         if (!reading.hasValidMotion)
         {
             SentinelLog::write(
                 SentinelLog::Level::Error,
                 "SENSOR",
-                "Guncel MPU6050 olcumu yok; gonderim atlandi.");
+                "Güncel MPU6050 ölçümü yok; gönderim atlandı.");
             return;
         }
 
@@ -75,7 +77,7 @@ void loop()
             SentinelLog::write(
                 SentinelLog::Level::Error,
                 "SAAT",
-                "Zaman bilgisi yok; gonderim atlandi.");
+                "Zaman bilgisi yok; gönderim atlandı.");
             return;
         }
 
@@ -83,7 +85,7 @@ void loop()
 
         startedUs = micros();
         const bool accepted = sendReadingToApi(reading, deviceId);
-        logSlowOperation("API kayıt hazırlama", startedUs);
+        logSlowOperation("API kayıt hazırlama", startedUs, 50);
         if (!accepted)
         {
             SentinelLog::write(

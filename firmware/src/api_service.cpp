@@ -112,27 +112,63 @@ void updateApiService()
 
     int statusCode = -1;
 
-    if (http.begin(client, SENTINEL_API_URL))
+    const uint32_t startedUs = micros();
+    const bool initialized = http.begin(client, SENTINEL_API_URL);
+
+    if (initialized)
     {
         http.addHeader("Content-Type", "application/json");
-
         http.addHeader(
             "Authorization",
             String("Bearer ") + SENTINEL_API_KEY);
-
-        statusCode = http.POST(pending.payload);
     }
 
+    const uint32_t preparedUs = micros();
+
+    if (initialized)
+        statusCode = http.POST(pending.payload);
+
+    const uint32_t responseUs = micros();
+
     http.end();
+
+    const uint32_t finishedUs = micros();
+
+    const double totalMs = (finishedUs - startedUs) / 1000.0;
+
+    SentinelLog::write(
+        totalMs >= 1000
+            ? SentinelLog::Level::Warning
+            : SentinelLog::Level::Debug,
+        "API-SURE",
+        "Hazırlık: %.1f ms | HTTP: %.1f ms | Kapatma: %.1f ms | Toplam: %.1f ms | Kod: %d",
+        (preparedUs - startedUs) / 1000.0,
+        (responseUs - preparedUs) / 1000.0,
+        (finishedUs - responseUs) / 1000.0,
+        (finishedUs - startedUs) / 1000.0,
+        statusCode);
+
+    if (statusCode < 0)
+    {
+        SentinelLog::write(
+            SentinelLog::Level::Warning,
+            "API",
+            "Bağlantı hatası: %s",
+            HTTPClient::errorToString(statusCode).c_str());
+    }
 
     if (statusCode == 200 || statusCode == 201)
     {
         SentinelLog::write(
             SentinelLog::Level::Info,
             "API",
+            "%s | HTTP %d | %.1f ms | Deneme: %lu",
             statusCode == 201
-                ? "Ölçüm kaydedildi."
-                : "Ölçüm zaten kayıtlı; gönderim tamamlandı.");
+                ? "Ölçüm kaydedildi"
+                : "Ölçüm zaten kayıtlı",
+            statusCode,
+            totalMs,
+            static_cast<unsigned long>(pending.attempt));
 
         pending = PendingUpload{};
         return;

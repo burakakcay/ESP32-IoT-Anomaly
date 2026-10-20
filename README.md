@@ -105,6 +105,8 @@ Backend terminali açık kalmalıdır. Yerel CORS ayarı `http://localhost:5000`
 
 Fiziksel telefonda çalıştırılırken API adresinde `localhost` yerine bilgisayarın erişilebilir yerel IP adresi kullanılmalıdır.
 
+Her bileşenin kurulum komutlarına proje kök dizininden, ayrı bir terminalde başlayın.
+
 ## API
 
 | Yöntem | Yol | İşlev |

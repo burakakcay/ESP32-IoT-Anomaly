@@ -357,6 +357,20 @@ class _SensorDetailScreenState extends State<SensorDetailScreen> {
             _ => historyService.timestamps,
           };
 
+    final DateTime? historyStart = chartTimestamps.isEmpty
+        ? null
+        : chartTimestamps.first;
+
+    final DateTime? historyEnd = chartTimestamps.isEmpty
+        ? null
+        : chartTimestamps.last;
+
+    final DateTime? defaultRangeEnd = historyStart != null && historyEnd != null
+        ? (historyEnd.isAfter(historyStart)
+              ? historyEnd
+              : historyStart.add(const Duration(seconds: 30)))
+        : null;
+
     List<double>? axisValues(
       double Function(SensorData) select,
       List<double>? fallback,
@@ -378,14 +392,14 @@ class _SensorDetailScreenState extends State<SensorDetailScreen> {
       (reading) => sensorType == SensorType.acceleration
           ? reading.acceleration.y.toDouble()
           : reading.gyroscope.y.toDouble(),
-      getChartValuesX(),
+      getChartValuesY(),
     );
 
     final chartValuesZ = axisValues(
       (reading) => sensorType == SensorType.acceleration
           ? reading.acceleration.z.toDouble()
           : reading.gyroscope.z.toDouble(),
-      getChartValuesX(),
+      getChartValuesZ(),
     );
 
     final double? min = chartValues.isEmpty
@@ -502,8 +516,8 @@ class _SensorDetailScreenState extends State<SensorDetailScreen> {
               sensorType: sensorType,
               values: chartValues,
               timestamps: chartTimestamps,
-              rangeStart: useFilteredData ? _chartFrom : null,
-              rangeEnd: useFilteredData ? _chartTo : null,
+              rangeStart: useFilteredData ? _chartFrom : historyStart,
+              rangeEnd: useFilteredData ? _chartTo : defaultRangeEnd,
               valuesX: chartValuesX,
               valuesY: chartValuesY,
               valuesZ: chartValuesZ,

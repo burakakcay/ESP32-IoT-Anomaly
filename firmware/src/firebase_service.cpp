@@ -233,8 +233,8 @@ void updateFirebaseService()
         SentinelLog::write(
             SentinelLog::Level::Warning,
             "FIRESTORE",
-            "Gonderim zaman asimina ugradi; kayit korundu. "
-            "%lu sn sonra Firebase hazirsa tekrar denenecek.",
+            "Gönderim zaman aşımına uğradı; kayıt korundu. "
+            "%lu sn sonra Firebase hazırsa tekrar denenecek.",
             static_cast<unsigned long>(
                 pendingReading.retryDelayMs / 1000));
     }
@@ -275,7 +275,7 @@ void uploadReadingDocument(
 
     if (!reading.hasValidTime)
     {
-        SentinelLog::write(SentinelLog::Level::Error, "FIRESTORE", "Zaman bilgisi yok; gonderim atlandi.");
+        SentinelLog::write(SentinelLog::Level::Error, "FIRESTORE", "Zaman bilgisi yok; gönderim atlandı.");
         return;
     }
 
